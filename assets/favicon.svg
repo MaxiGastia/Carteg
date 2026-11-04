@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 620" fill="none">
+  <title>Carteg</title>
+  <rect width="620" height="620" rx="130" fill="#0a0c08"/>
+  <g stroke="#c9f73a" stroke-width="44" stroke-linecap="round">
+    <circle cx="310" cy="310" r="210"/>
+    <path d="M310 310L161 161M310 310L459 161M310 310L161 459M310 310L459 459"/>
+  </g>
+  <g fill="#c9f73a">
+    <circle cx="310" cy="310" r="72"/>
+    <circle cx="161" cy="161" r="52"/>
+    <circle cx="459" cy="161" r="52"/>
+    <circle cx="161" cy="459" r="52"/>
+    <circle cx="459" cy="459" r="52"/>
+  </g>
+</svg>

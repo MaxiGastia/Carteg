@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Carteg | Displays NFC para comercios</title>
+    <meta name="description" content="Displays de mesa con chip NFC para comercios. Tus clientes acercan el celular y te dejan una reseña en Google, te siguen en Instagram o te escriben por WhatsApp. Sin QR, sin app y sin pagos mensuales.">
+    <meta property="og:title" content="Carteg | Displays NFC para comercios">
+    <meta property="og:description" content="Un toque del celular y tu cliente te deja una reseña, te sigue o te escribe.">
+    <meta property="og:image" content="assets/google.jpg?v=2">
+    <meta name="theme-color" content="#0a0c08">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=15">
+    <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="carteg" viewBox="0 0 620 620">
+            <g fill="none" stroke="currentColor" stroke-width="20" stroke-linecap="round">
+                <circle cx="310" cy="310" r="260"/>
+                <path d="M207 159A183 183 0 0 1 413 159M461 207A183 183 0 0 1 461 413M413 461A183 183 0 0 1 207 461M159 413A183 183 0 0 1 159 207"/>
+                <path stroke-linecap="butt" d="M285 207A106 106 0 0 0 233 237M335 207A106 106 0 0 1 387 237M404 262A106 106 0 0 1 404 358M387 383A106 106 0 0 1 233 383M216 358A106 106 0 0 1 216 262"/>
+                <path d="M310 310V140M310 310L126 126M310 310L494 126M310 310L126 494M310 310L494 494"/>
+            </g>
+            <g fill="currentColor">
+                <circle cx="310" cy="310" r="48"/>
+                <circle cx="126" cy="126" r="35"/>
+                <circle cx="494" cy="126" r="35"/>
+                <circle cx="126" cy="494" r="35"/>
+                <circle cx="494" cy="494" r="35"/>
+            </g>
+            <g fill="#0a0c08" stroke="currentColor" stroke-width="20">
+                <circle cx="310" cy="50" r="40"/>
+                <circle cx="570" cy="310" r="40"/>
+                <circle cx="310" cy="570" r="40"/>
+                <circle cx="50" cy="310" r="40"/>
+            </g>
+        </symbol>
+    </svg>
+
+    <canvas id="scene" aria-hidden="true"></canvas>
+
+    <header class="nav">
+        <a href="#top" class="brand" aria-label="Carteg, ir al inicio">
+            <svg class="brand-mark"><use href="#carteg"/></svg>
+            <span>Carteg</span>
+        </a>
+        <nav class="nav-links" aria-label="Principal">
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#modelos">Modelos</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="catalogo.html#combos">Combos</a>
+            <a href="#preguntas">Preguntas</a>
+        </nav>
+        <a href="catalogo.html" class="btn btn-small">Ver catálogo</a>
+    </header>
+
+    <main>
+        <section id="top" class="hero">
+            <div class="wrap hero-grid">
+                <div class="hero-copy">
+                    <p class="eyebrow">Displays NFC para comercios · Córdoba, Argentina</p>
+                    <h1>
+                        Un toque del celular y tu cliente
+                        <span class="rotator" aria-live="off">
+                            <em class="is-active">te deja una reseña.</em>
+                            <em>te sigue en Instagram.</em>
+                            <em>te escribe al WhatsApp.</em>
+                        </span>
+                    </h1>
+                    <p class="lead">Displays de mesa con chip NFC, programados con los links de tu negocio. Sin QR, sin app y sin pagos mensuales.</p>
+                    <div class="hero-actions">
+                        <a href="catalogo.html" class="btn">Ver catálogo</a>
+                        <a href="#como-funciona" class="btn btn-ghost">Ver cómo funciona</a>
+                    </div>
+                    <p class="hero-price"><strong>Desde $24.000</strong> · Pago único</p>
+                    <a href="#como-funciona" class="scroll-hint"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2v11M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deslizá para ver más</span></a>
+                </div>
+                <img class="fallback hero-fallback" src="assets/google.jpg?v=2" alt="Display NFC para pedir reseñas en Google">
+            </div>
+        </section>
+
+        <section id="como-funciona" class="scrolly scrolly-how">
+            <div class="stage">
+                <div class="wrap stage-inner">
+                    <p class="eyebrow">Cómo funciona</p>
+                    <div class="panels" data-panels="how">
+                        <article class="panel is-active">
+                            <span class="step-number">1</span>
+                            <h2>Lo ponés en la mesa o el mostrador</h2>
+                            <p>Te llega listo, con tus links ya cargados. No hay que instalar nada ni enchufarlo.</p>
+                        </article>
+                        <article class="panel">
+                            <span class="step-number">2</span>
+                            <h2>Tu cliente acerca el celular</h2>
+                            <p>Con el celular desbloqueado, solo tiene que apoyarlo sobre el display. No hace falta abrir la cámara ni bajar una app.</p>
+                        </article>
+                        <article class="panel">
+                            <span class="step-number">3</span>
+                            <h2>Se abre lo que elegiste</h2>
+                            <p>Tu página de reseñas de Google, tu Instagram o un chat de WhatsApp con tu negocio. Sin buscarte y sin agendar tu número.</p>
+                        </article>
+                    </div>
+                    <p class="scroll-hint" data-hint="how"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2v11M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deslizá para ver más</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="modelos" class="scrolly scrolly-models">
+            <div class="stage">
+                <div class="wrap stage-inner">
+                    <p class="eyebrow">Tres modelos</p>
+                    <div class="panels" data-panels="models">
+                        <article class="panel is-active">
+                            <h2>Reseñas de <em>Google</em></h2>
+                            <p>Pedile la opinión a tu cliente justo cuando todavía está en tu local. Va directo a tu página de reseñas.</p>
+                            <p class="fit">Ideal para cafés, restaurantes y peluquerías.</p>
+                            <img class="fallback" src="assets/google.jpg?v=2" alt="Display de reseñas de Google" loading="lazy">
+                            <a class="btn" href="producto-google.html">Quiero este · $24.000</a>
+                        </article>
+                        <article class="panel">
+                            <h2>Seguinos en <em>Instagram</em></h2>
+                            <p>Quien pasó por tu local te sigue en un toque y después ve tus novedades y promos.</p>
+                            <p class="fit">Ideal para locales de ropa, estética y gastronomía.</p>
+                            <img class="fallback" src="assets/instagram.jpg?v=2" alt="Display para seguir en Instagram" loading="lazy">
+                            <a class="btn" href="producto-instagram.html">Quiero este · $24.000</a>
+                        </article>
+                        <article class="panel">
+                            <h2>Escribinos al <em>WhatsApp</em></h2>
+                            <p>Se abre un chat con tu negocio sin tener que agendar el número. Sirve para turnos, reservas y consultas.</p>
+                            <p class="fit">Ideal para quien trabaja con turnos o pedidos.</p>
+                            <img class="fallback" src="assets/whatsapp.jpg?v=2" alt="Display para escribir por WhatsApp" loading="lazy">
+                            <a class="btn" href="producto-whatsapp.html">Quiero este · $24.000</a>
+                        </article>
+                    </div>
+                    <div class="dots" aria-hidden="true"><i class="is-active"></i><i></i><i></i></div>
+                    <p class="scroll-hint" data-hint="models"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2v11M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Deslizá para ver más</span></p>
+                </div>
+            </div>
+        </section>
+
+        <div class="solid">
+            <section class="facts wrap reveal" aria-label="Lo más importante">
+                <div><strong>Sin app</strong><span>Tu cliente no instala nada.</span></div>
+                <div><strong>Sin batería</strong><span>Ni enchufe ni carga.</span></div>
+                <div><strong>Pago único</strong><span>Sin cuotas mensuales.</span></div>
+                <div><strong>Compatible</strong><span>Android con NFC activado y iPhone XS o posterior.</span></div>
+            </section>
+
+            <section class="in-place wrap">
+                <figure class="reveal">
+                    <img src="assets/mostrador.jpg" alt="Display de reseñas de Google sobre el mostrador de un café, al lado del posnet" loading="lazy" width="1200" height="1608">
+                    <figcaption>Imagen ilustrativa.</figcaption>
+                </figure>
+                <div class="in-place-copy reveal">
+                    <p class="eyebrow">En tu local</p>
+                    <h2>Justo donde tu cliente <em>ya está mirando</em></h2>
+                    <p class="lead">Ocupa poco lugar y lo podés poner al lado de la caja. Tu cliente lo ve cuando paga, que es el mejor momento para pedirle una opinión.</p>
+                </div>
+            </section>
+
+            <section class="photos wrap">
+                <div class="section-head reveal">
+                    <p class="eyebrow">Así son en persona</p>
+                    <h2>Fotos reales de los displays</h2>
+                </div>
+                <div class="photo-grid">
+                    <figure class="reveal"><a href="producto-google.html"><img src="assets/google.jpg?v=2" alt="Display blanco: Opina sobre nosotros en Google" loading="lazy"><figcaption>Reseñas de Google</figcaption></a></figure>
+                    <figure class="reveal"><a href="producto-instagram.html"><img src="assets/instagram.jpg?v=2" alt="Display rosa: Seguinos en Instagram" loading="lazy"><figcaption>Instagram</figcaption></a></figure>
+                    <figure class="reveal"><a href="producto-whatsapp.html"><img src="assets/whatsapp.jpg?v=2" alt="Display verde: Escribinos al WhatsApp" loading="lazy"><figcaption>WhatsApp</figcaption></a></figure>
+                </div>
+
+                <div class="specs reveal">
+                    <h3>Ficha técnica</h3>
+                    <dl>
+                        <div><dt>Material</dt><dd>Plástico PLA impreso en 3D</dd></div>
+                        <div><dt>Tecnología</dt><dd>Chip NFC, sin batería ni enchufe</dd></div>
+                        <div><dt>Compatibilidad</dt><dd>Android con NFC activado y iPhone XS o posterior</dd></div>
+                        <div><dt>Colores</dt><dd>Blanco, rosa y verde, según el modelo</dd></div>
+                        <div><dt>Configuración</dt><dd>Te llega programado con tus links</dd></div>
+                        <div><dt>Pago</dt><dd>Único, sin mensualidades</dd></div>
+                    </dl>
+                </div>
+            </section>
+
+            <section id="precios" class="catalog-teaser wrap reveal">
+                <div class="catalog-teaser-copy">
+                    <p class="eyebrow">Catálogo</p>
+                    <h2>Elegí tu cartel o combo y <em>pagá menos</em></h2>
+                    <p class="lead">Un display desde <span data-price-plain="1"></span>. El Pack Completo, con los 3 modelos, sale <span data-price-plain="3"></span>.</p>
+                    <p class="loss">Cada día sin display son clientes que se van de tu local sin dejarte su opinión.</p>
+                </div>
+                <div class="catalog-teaser-actions">
+                    <a class="btn" href="catalogo.html">Ver catálogo</a>
+                    <a class="btn btn-ghost" href="catalogo.html#combos">Ver combos</a>
+                </div>
+            </section>
+
+            <section id="garantia" class="guarantee wrap reveal">
+                <svg class="seal" viewBox="0 0 120 120" role="img" aria-label="Sello de garantía de 90 días">
+                    <defs>
+                        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#fbe9b2"/>
+                            <stop offset="0.5" stop-color="#e2b64f"/>
+                            <stop offset="1" stop-color="#a9781f"/>
+                        </linearGradient>
+                    </defs>
+                    <g class="seal-star" fill="url(#gold)">
+                        <rect x="20" y="20" width="80" height="80" rx="9"/>
+                        <rect x="20" y="20" width="80" height="80" rx="9" transform="rotate(22.5 60 60)"/>
+                        <rect x="20" y="20" width="80" height="80" rx="9" transform="rotate(45 60 60)"/>
+                        <rect x="20" y="20" width="80" height="80" rx="9" transform="rotate(67.5 60 60)"/>
+                    </g>
+                    <circle cx="60" cy="60" r="39" fill="#17130a" stroke="url(#gold)" stroke-width="2"/>
+                    <path d="M45 52l10 10 20-21" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <text x="60" y="84" text-anchor="middle" fill="#f4d98c" font-size="12.5" font-weight="700" letter-spacing="0.6" font-family="Bricolage Grotesque, Arial, sans-serif">90 DÍAS</text>
+                </svg>
+                <div class="guarantee-copy">
+                    <p class="eyebrow">Garantía Carteg</p>
+                    <h2>Si no funciona, <em>te lo cambiamos</em></h2>
+                    <p>Tenés 90 días desde que lo recibís: si el display o el chip fallan, te lo cambiamos sin costo, con el envío incluido.</p>
+                    <small>No cubre roturas por golpes ni deformaciones por calor o sol directo. Esta garantía no limita los derechos que te correspondan por ley.</small>
+                </div>
+            </section>
+
+            <section class="buy wrap">
+                <div class="section-head reveal">
+                    <p class="eyebrow">Cómo se compra</p>
+                    <h2>Cuatro pasos y listo</h2>
+                </div>
+                <ol class="buy-steps">
+                    <li class="reveal"><strong>Armás tu carrito</strong><span>Elegí tus displays en el catálogo y agregalos al carrito.</span></li>
+                    <li class="reveal"><strong>Pagás online</strong><span>Completás tus datos y pagás en la tienda, sin esperar a que te respondamos.</span></li>
+                    <li class="reveal"><strong>Nos pasás tus links</strong><span>Escribinos por WhatsApp con tu link de reseñas, tu usuario de Instagram o tu número.</span></li>
+                    <li class="reveal"><strong>Lo recibís listo</strong><span>Por Andreani, a tu domicilio o a una sucursal.</span></li>
+                </ol>
+
+                <div class="link-help reveal">
+                    <div>
+                        <h3>¿No sabés cuál es tu link de reseñas?</h3>
+                        <p>Decinos el nombre de tu local y lo buscamos nosotros. Te lo mandamos para que lo revises antes de programar el chip.</p>
+                    </div>
+                    <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://wa.me/5493516967688?text=Hola%20Carteg!%20Necesito%20ayuda%20para%20encontrar%20mi%20link%20de%20rese%C3%B1as.%20Mi%20local%20se%20llama%20">Ayudame con mi link</a>
+                </div>
+            </section>
+
+            <section id="preguntas" class="faq wrap">
+                <div class="section-head reveal">
+                    <p class="eyebrow">Preguntas</p>
+                    <h2>Lo que más nos preguntan</h2>
+                </div>
+                <div class="faq-list reveal">
+                    <details>
+                        <summary>¿Con qué celulares funciona?</summary>
+                        <p>Con Android que tenga NFC activado y con iPhone XS o posterior. El celular tiene que estar desbloqueado.</p>
+                    </details>
+                    <details>
+                        <summary>¿Qué necesito para pedir el display de reseñas?</summary>
+                        <p>Tu local tiene que tener un perfil en Google. Si no conocés el link de reseñas, lo buscamos nosotros con el nombre de tu local.</p>
+                    </details>
+                    <details>
+                        <summary>¿Cuánto sale el envío?</summary>
+                        <p>Es gratis si tu compra supera los $70.000. Si no, lo calculás en el carrito con tu código postal antes de pagar.</p>
+                    </details>
+                    <details>
+                        <summary>¿Necesita batería o wifi?</summary>
+                        <p>El display no necesita batería, enchufe ni wifi. El celular de tu cliente sí necesita conexión a internet para abrir el link.</p>
+                    </details>
+                    <details>
+                        <summary>¿Puedo poner mi logo?</summary>
+                        <p>Sí, a consultar. <a class="text-link" target="_blank" rel="noopener" href="https://wa.me/5493516967688?text=Hola%20Carteg!%20Quiero%20consultar%20por%20un%20display%20personalizado%20con%20mi%20logo.">Escribinos por WhatsApp</a> y te contamos las opciones.</p>
+                    </details>
+                    <details>
+                        <summary>¿Hay que pagar todos los meses?</summary>
+                        <p>No. Pagás una sola vez y el display es tuyo.</p>
+                    </details>
+                    <details>
+                        <summary>¿Puedo dar un descuento a cambio de una reseña?</summary>
+                        <p>No. Las políticas de Google no permiten ofrecer incentivos a cambio de reseñas. Pedile a todos tus clientes que opinen, sin filtrar a quién.</p>
+                    </details>
+                    <details>
+                        <summary>¿Cómo lo cuido?</summary>
+                        <p>Está impreso en 3D con plástico PLA, que se puede deformar con el calor. Evitá dejarlo al sol directo, por ejemplo en una vidriera.</p>
+                    </details>
+                </div>
+            </section>
+
+            <section class="resellers wrap reveal">
+                <div>
+                    <h2>¿Querés revenderlos?</h2>
+                    <p>Tenemos precios por cantidad para revendedores y compras grandes.</p>
+                </div>
+                <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://wa.me/5493516967688?text=Hola%20Carteg!%20Quiero%20consultar%20por%20precios%20para%20revendedores.">Consultar</a>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="wrap footer-grid">
+            <div class="footer-brand">
+                <svg class="brand-mark"><use href="#carteg"/></svg>
+                <strong>Carteg</strong>
+                <p>Displays NFC para comercios. Córdoba, Argentina.</p>
+            </div>
+            <div>
+                <a href="https://wa.me/5493516967688" target="_blank" rel="noopener">WhatsApp: +54 9 351 696-7688</a>
+                <a class="regret" href="arrepentimiento.html">Botón de arrepentimiento</a>
+            </div>
+            <div class="legal">
+                <p><mark>Titular, CUIT y domicilio: a completar</mark></p>
+                <p>Google, Instagram y WhatsApp son marcas de sus respectivos dueños. Carteg no tiene relación con esas empresas.</p>
+                <p>© 2026 Carteg</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="shared.js?v=15"></script>
+    <script src="cart.js?v=15"></script>
+    <script src="main.js?v=15"></script>
+    <script src="vendor/three.min.js"></script>
+    <script src="scene.js?v=15"></script>
+</body>
+</html>

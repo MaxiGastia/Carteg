@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Catálogo | Carteg</title>
+    <meta name="description" content="Displays NFC para comercios: reseñas de Google, Instagram y WhatsApp. Comprá uno o llevá un combo y pagá menos.">
+    <meta property="og:title" content="Catálogo | Carteg">
+    <meta property="og:image" content="assets/google.jpg?v=2">
+    <meta name="theme-color" content="#0a0c08">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=15">
+    <script>document.documentElement.classList.add('js');</script>
+</head>
+<body class="product-page catalog-page">
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="carteg" viewBox="0 0 620 620">
+            <g fill="none" stroke="currentColor" stroke-width="20" stroke-linecap="round">
+                <circle cx="310" cy="310" r="260"/>
+                <path d="M207 159A183 183 0 0 1 413 159M461 207A183 183 0 0 1 461 413M413 461A183 183 0 0 1 207 461M159 413A183 183 0 0 1 159 207"/>
+                <path stroke-linecap="butt" d="M285 207A106 106 0 0 0 233 237M335 207A106 106 0 0 1 387 237M404 262A106 106 0 0 1 404 358M387 383A106 106 0 0 1 233 383M216 358A106 106 0 0 1 216 262"/>
+                <path d="M310 310V140M310 310L126 126M310 310L494 126M310 310L126 494M310 310L494 494"/>
+            </g>
+            <g fill="currentColor">
+                <circle cx="310" cy="310" r="48"/>
+                <circle cx="126" cy="126" r="35"/>
+                <circle cx="494" cy="126" r="35"/>
+                <circle cx="126" cy="494" r="35"/>
+                <circle cx="494" cy="494" r="35"/>
+            </g>
+            <g fill="#0a0c08" stroke="currentColor" stroke-width="20">
+                <circle cx="310" cy="50" r="40"/>
+                <circle cx="570" cy="310" r="40"/>
+                <circle cx="310" cy="570" r="40"/>
+                <circle cx="50" cy="310" r="40"/>
+            </g>
+        </symbol>
+    </svg>
+
+    <header class="nav">
+        <a href="index.html" class="brand" aria-label="Carteg, ir al inicio">
+            <svg class="brand-mark"><use href="#carteg"/></svg>
+            <span>Carteg</span>
+        </a>
+        <nav class="nav-links" aria-label="Principal">
+            <a href="index.html#como-funciona">Cómo funciona</a>
+            <a href="index.html#modelos">Modelos</a>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="index.html#precios">Combos</a>
+            <a href="index.html#preguntas">Preguntas</a>
+        </nav>
+        <a href="#combos" class="btn btn-small">Ver combos</a>
+    </header>
+
+    <main class="wrap catalog">
+        <header class="catalog-head">
+            <h1>Catálogo</h1>
+            <p class="lead">Elegí lo que necesita tu local. Envío gratis superando $70.000.</p>
+            <div class="stock" id="stock">
+                <div class="stock-text">
+                    <strong>Precio de lanzamiento</strong>
+                    <span id="stock-left"></span>
+                </div>
+                <div class="stock-bar" aria-hidden="true"><i id="stock-fill"></i></div>
+            </div>
+        </header>
+
+        <section aria-labelledby="carteles">
+            <h2 id="carteles">Carteles individuales</h2>
+            <div class="catalog-grid">
+                <article class="catalog-card">
+                    <a class="catalog-media" href="producto-google.html"><img src="assets/google.jpg?v=2" alt="Reseñas de Google" loading="lazy" width="900" height="1200"></a>
+                    <div class="catalog-info">
+                        <h3><a href="producto-google.html">Reseñas de Google</a></h3>
+                        <p>Tu cliente acerca el celular y te deja su opinión.</p>
+                        <div class="catalog-price" data-price-of="google"></div>
+                        <button type="button" class="btn btn-wide" data-add="google">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="producto-google.html">Ver detalle</a>
+                    </div>
+                </article>
+                <article class="catalog-card">
+                    <a class="catalog-media" href="producto-instagram.html"><img src="assets/instagram.jpg?v=2" alt="Instagram" loading="lazy" width="900" height="1200"></a>
+                    <div class="catalog-info">
+                        <h3><a href="producto-instagram.html">Instagram</a></h3>
+                        <p>Tu cliente te sigue con solo acercar el celular.</p>
+                        <div class="catalog-price" data-price-of="instagram"></div>
+                        <button type="button" class="btn btn-wide" data-add="instagram">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="producto-instagram.html">Ver detalle</a>
+                    </div>
+                </article>
+                <article class="catalog-card">
+                    <a class="catalog-media" href="producto-whatsapp.html"><img src="assets/whatsapp.jpg?v=2" alt="WhatsApp" loading="lazy" width="900" height="1200"></a>
+                    <div class="catalog-info">
+                        <h3><a href="producto-whatsapp.html">WhatsApp</a></h3>
+                        <p>Se abre un chat con tu negocio, sin agendar el número.</p>
+                        <div class="catalog-price" data-price-of="whatsapp"></div>
+                        <button type="button" class="btn btn-wide" data-add="whatsapp">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="producto-whatsapp.html">Ver detalle</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="combos" aria-labelledby="combos-title">
+            <h2 id="combos-title">Combos</h2>
+            <div class="catalog-grid catalog-grid-combos">
+                <article class="catalog-card catalog-combo is-featured">
+                    <a class="catalog-collage" href="combo-completo.html" aria-label="Ver detalle de Pack Completo"><img src="assets/google.jpg?v=2" alt="" loading="lazy"><img src="assets/instagram.jpg?v=2" alt="" loading="lazy"><img src="assets/whatsapp.jpg?v=2" alt="" loading="lazy"></a>
+                    <div class="catalog-info">
+                        <em class="combo-tag">Los 3 modelos</em><h3><a href="combo-completo.html">Pack Completo</a></h3>
+                        <p>Reseñas, Instagram y WhatsApp.</p>
+                        <div class="catalog-price" data-price-of="completo"></div>
+                        <button type="button" class="btn btn-wide" data-add="completo">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="combo-completo.html">Ver detalle</a>
+                    </div>
+                </article>
+                <article class="catalog-card catalog-combo">
+                    <a class="catalog-collage" href="combo-resenas-whatsapp.html" aria-label="Ver detalle de Reseñas + WhatsApp"><img src="assets/google.jpg?v=2" alt="" loading="lazy"><img src="assets/whatsapp.jpg?v=2" alt="" loading="lazy"></a>
+                    <div class="catalog-info">
+                        <h3><a href="combo-resenas-whatsapp.html">Reseñas + WhatsApp</a></h3>
+                        <p>Más opiniones y más consultas.</p>
+                        <div class="catalog-price" data-price-of="resenas-whatsapp"></div>
+                        <button type="button" class="btn btn-wide" data-add="resenas-whatsapp">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="combo-resenas-whatsapp.html">Ver detalle</a>
+                    </div>
+                </article>
+                <article class="catalog-card catalog-combo">
+                    <a class="catalog-collage" href="combo-resenas-instagram.html" aria-label="Ver detalle de Reseñas + Instagram"><img src="assets/google.jpg?v=2" alt="" loading="lazy"><img src="assets/instagram.jpg?v=2" alt="" loading="lazy"></a>
+                    <div class="catalog-info">
+                        <h3><a href="combo-resenas-instagram.html">Reseñas + Instagram</a></h3>
+                        <p>Más opiniones y más seguidores.</p>
+                        <div class="catalog-price" data-price-of="resenas-instagram"></div>
+                        <button type="button" class="btn btn-wide" data-add="resenas-instagram">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="combo-resenas-instagram.html">Ver detalle</a>
+                    </div>
+                </article>
+                <article class="catalog-card catalog-combo">
+                    <a class="catalog-collage" href="combo-instagram-whatsapp.html" aria-label="Ver detalle de Instagram + WhatsApp"><img src="assets/instagram.jpg?v=2" alt="" loading="lazy"><img src="assets/whatsapp.jpg?v=2" alt="" loading="lazy"></a>
+                    <div class="catalog-info">
+                        <h3><a href="combo-instagram-whatsapp.html">Instagram + WhatsApp</a></h3>
+                        <p>Más seguidores y más consultas.</p>
+                        <div class="catalog-price" data-price-of="instagram-whatsapp"></div>
+                        <button type="button" class="btn btn-wide" data-add="instagram-whatsapp">Agregar al carrito</button>
+                        <a class="text-link catalog-detail" href="combo-instagram-whatsapp.html">Ver detalle</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <p class="combo-more catalog-more">¿Comprás 10 o más? <a class="text-link" target="_blank" rel="noopener" href="https://wa.me/5493516967688?text=Hola%20Carteg!%20Quiero%20consultar%20por%20una%20compra%20de%2010%20displays%20o%20m%C3%A1s.">Escribinos por WhatsApp</a>.</p>
+    </main>
+
+    <footer class="footer">
+        <div class="wrap footer-grid">
+            <div class="footer-brand">
+                <svg class="brand-mark"><use href="#carteg"/></svg>
+                <strong>Carteg</strong>
+                <p>Displays NFC para comercios. Córdoba, Argentina.</p>
+            </div>
+            <div>
+                <a href="https://wa.me/5493516967688" target="_blank" rel="noopener">WhatsApp: +54 9 351 696-7688</a>
+                <a class="regret" href="arrepentimiento.html">Botón de arrepentimiento</a>
+            </div>
+            <div class="legal">
+                <p><mark>Titular, CUIT y domicilio: a completar</mark></p>
+                <p>Google, Instagram y WhatsApp son marcas de sus respectivos dueños. Carteg no tiene relación con esas empresas.</p>
+                <p>© 2026 Carteg</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="shared.js?v=15"></script>
+    <script src="cart.js?v=15"></script>
+</body>
+</html>
