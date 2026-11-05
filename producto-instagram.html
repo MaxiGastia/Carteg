@@ -7,13 +7,13 @@
     <meta name="description" content="Quien pasó por tu local te sigue en un toque, y después ve tus novedades y promos.">
     <meta property="og:title" content="Display para seguir en Instagram | Carteg">
     <meta property="og:description" content="Quien pasó por tu local te sigue en un toque, y después ve tus novedades y promos.">
-    <meta property="og:image" content="assets/instagram.jpg?v=2">
+    <meta property="og:image" content="https://carteg.vercel.app/assets/instagram.jpg?v=2">
     <meta name="theme-color" content="#0a0c08">
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=15">
+    <link rel="stylesheet" href="styles.css?v=16">
     <script>document.documentElement.classList.add('js');</script>
 </head>
 <body class="product-page">
@@ -71,9 +71,10 @@
             <div class="buy-box">
                 <p class="in-stock"><i aria-hidden="true"></i>En stock, listo para enviar</p>
                 <h1>Display para seguir en Instagram</h1>
-                <p class="product-pricing"><strong id="product-price"></strong> <s id="product-old" hidden></s></p>
+                <p class="product-pricing"><strong id="product-price"></strong> <span id="product-old" class="price-sep" hidden></span></p>
                 <p class="lead">Quien pasó por tu local te sigue en un toque, y después ve tus novedades y promos.</p>
                 <ul class="product-bullets">
+                    <li>La base es completamente gratis.</li>
                     <li>Te llega programado con tu usuario de Instagram.</li>
                     <li>Abre tu perfil con solo acercar el celular.</li>
                     <li>Sin app, sin QR y sin pagos mensuales.</li>
@@ -88,7 +89,7 @@
                 </div>
 
                 <fieldset class="qty">
-                    <legend>Llevá más y ahorrá</legend>
+                    <legend>Llevá 3 y pagá menos</legend>
                     <div id="qty-options" class="qty-options"></div>
                 </fieldset>
                 <p class="combine">¿Querés combinar modelos? <a class="text-link" href="catalogo.html#combos">Ver combos</a></p>
@@ -97,7 +98,7 @@
 
                 <button type="button" class="btn btn-wide" id="add-to-cart">Agregar al carrito</button>
 
-                <p class="summary-note">Envío gratis superando $70.000. Si no llegás, calculás el costo con tu código postal en el carrito.</p>
+                <p class="summary-note">Envío gratis superando $50.000, como en el pack de 3. Si no llegás, calculás el costo con tu código postal en el carrito.</p>
             </div>
         </div>
 
@@ -115,6 +116,7 @@
             <dl>
                 <div><dt>Material</dt><dd>Plástico PLA impreso en 3D</dd></div>
                 <div><dt>Tecnología</dt><dd>Chip NFC, sin batería ni enchufe</dd></div>
+                <div><dt>Base</dt><dd>Gratis con cada display</dd></div>
                 <div><dt>Compatibilidad</dt><dd>Android con NFC activado y iPhone XS o posterior</dd></div>
                 <div><dt>Color</dt><dd>Rosa</dd></div>
                 <div><dt>Configuración</dt><dd>Te llega programado con tus links</dd></div>
@@ -164,7 +166,6 @@
                 <a class="regret" href="arrepentimiento.html">Botón de arrepentimiento</a>
             </div>
             <div class="legal">
-                <p><mark>Titular, CUIT y domicilio: a completar</mark></p>
                 <p>Google, Instagram y WhatsApp son marcas de sus respectivos dueños. Carteg no tiene relación con esas empresas.</p>
                 <p>© 2026 Carteg</p>
             </div>
@@ -175,8 +176,8 @@
         <button type="button" class="btn btn-wide" id="buy-bar-button"></button>
     </div>
 
-    <script src="shared.js?v=15"></script>
-    <script src="cart.js?v=15"></script>
-    <script src="product.js?v=15"></script>
+    <script src="shared.js?v=16"></script>
+    <script src="cart.js?v=16"></script>
+    <script src="product.js?v=16"></script>
 </body>
 </html>

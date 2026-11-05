@@ -659,3 +659,8 @@ mark { padding: 2px 6px; border-radius: 4px; background: #ffd84d; color: #000; }
     .catalog-card:hover { transform: none; }
     .catalog-card:hover .catalog-media img, .catalog-card:hover .catalog-collage img { transform: none; }
 }
+
+/* Precio de los displays comprados por separado */
+.price-sep { color: var(--muted); font-size: 0.875rem; }
+.price-sep s { text-decoration-color: #ff8a7a; }
+.qty-price .price-sep { grid-column: 1; grid-row: 1; }

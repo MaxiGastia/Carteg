@@ -21,7 +21,7 @@ OPTIONS.forEach((count) => {
         <span class="qty-name">${count} ${count === 1 ? 'display' : 'displays'}</span>
         <span class="qty-price">
             <strong>${money(total)}</strong>
-            ${count > 1 ? `<s>${money(unitTotal)}</s><small>Ahorrás ${money(unitTotal - total)}</small>` : ''}
+            ${count === 3 ? `<span class="price-sep">Separados <s>${money(unitTotal)}</s></span><small>Mejor precio · Envío gratis</small>` : ''}
         </span>`;
     optionsEl.append(label);
 });
@@ -29,8 +29,8 @@ OPTIONS.forEach((count) => {
 function renderProduct() {
     const total = priceFor(quantity);
     priceEl.textContent = money(total);
-    oldEl.hidden = quantity === 1;
-    oldEl.textContent = money(quantity * PRICE_FIRST);
+    oldEl.hidden = quantity !== 3;
+    oldEl.innerHTML = `Separados <s>${money(quantity * PRICE_FIRST)}</s>`;
     buyBarButton.textContent = `${money(total)} · Agregar al carrito`;
 }
 

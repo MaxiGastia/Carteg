@@ -2,7 +2,8 @@
 
 // Precios provisorios: confirmar contra los costos antes de publicar.
 const PRICE_FIRST = 24000;
-const PRICES = { 1: PRICE_FIRST, 2: 41000, 3: 44000 };
+// Señuelo: 2 displays no tienen descuento y 3 llevan envío gratis. Mantener igual en Tiendanube.
+const PRICES = { 1: PRICE_FIRST, 2: 48000, 3: 52000 };
 
 // Cupo real del precio de lanzamiento. Restar en "left" cada display vendido.
 // Con left en 0 se oculta el bloque y hay que subir los precios.
@@ -57,12 +58,17 @@ document.querySelectorAll('[data-price-of]').forEach((el) => {
     const count = PRODUCTS[el.dataset.priceOf].models.length;
     const unitTotal = count * PRICE_FIRST;
     const total = priceFor(count);
-    el.innerHTML = count > 1
-        ? `<strong>${money(total)}</strong><s>${money(unitTotal)}</s><small>Ahorrás ${money(unitTotal - total)}</small>`
+    el.innerHTML = count === 3
+        ? `<strong>${money(total)}</strong><span class="price-sep">Separados <s>${money(unitTotal)}</s></span><small>Mejor precio · Envío gratis</small>`
         : `<strong>${money(total)}</strong>`;
 });
 
 // Precio simple dentro de un texto, según la cantidad de displays.
 document.querySelectorAll('[data-price-plain]').forEach((el) => {
     el.textContent = money(priceFor(Number(el.dataset.pricePlain)));
+});
+
+// Diferencia entre 2 y 3 displays, para ofrecer el pack.
+document.querySelectorAll('[data-price-step]').forEach((el) => {
+    el.textContent = money(priceFor(3) - priceFor(2));
 });
