@@ -4,6 +4,7 @@
 const PRICE_FIRST = 24000;
 // Señuelo: 2 displays no tienen descuento y 3 llevan envío gratis. Mantener igual en Tiendanube.
 const PRICES = { 1: PRICE_FIRST, 2: 48000, 3: 52000 };
+const FREE_SHIPPING_OVER = 50000; // Mantener igual que la regla de Tiendanube.
 
 // Cupo real del precio de lanzamiento. Restar en "left" cada display vendido.
 // Con left en 0 se oculta el bloque y hay que subir los precios.
