@@ -27,20 +27,61 @@ const Cart = (() => {
         return typeof variant === 'object' ? variant[qty] : variant;
     }
 
-    function unitPrice(id, qty) {
-        return priceFor(typeof VARIANTS[id] === 'object' ? qty : PRODUCTS[id].models.length);
+    const isDisplay = (id) => typeof VARIANTS[id] === 'object';
+    const MAX_PER_LINE = 30;
+
+    // Una línea por producto: cantidad de displays sueltos, o de combos.
+    function linesOf(items) {
+        const lines = [];
+        items.forEach((item) => {
+            if (!PRODUCTS[item.id]) return;
+            const amount = isDisplay(item.id) ? item.qty * item.units : item.units;
+            const found = lines.find((line) => line.id === item.id);
+            if (found) found.count += amount;
+            else lines.push({ id: item.id, count: amount });
+        });
+        return lines;
     }
 
-    const totalOf = (items) => items.reduce((sum, item) => sum + unitPrice(item.id, item.qty) * item.units, 0);
+    // Los displays de un mismo modelo se arman en packs de 3, que es el mejor precio.
+    function itemsOf(lines) {
+        const items = [];
+        lines.forEach(({ id, count }) => {
+            if (count <= 0) return;
+            if (!isDisplay(id)) {
+                items.push({ id, qty: 1, units: count });
+                return;
+            }
+            const packs = Math.floor(count / 3);
+            const rest = count % 3;
+            if (packs) items.push({ id, qty: 3, units: packs });
+            if (rest) items.push({ id, qty: rest, units: 1 });
+        });
+        return items;
+    }
+
+    function lineTotal({ id, count }) {
+        if (!isDisplay(id)) return priceFor(PRODUCTS[id].models.length) * count;
+        const rest = count % 3;
+        return Math.floor(count / 3) * PRICES[3] + (rest ? PRICES[rest] : 0);
+    }
+
+    const totalOf = (items) => linesOf(items).reduce((sum, line) => sum + lineTotal(line), 0);
+
+    function setLines(lines) {
+        write(itemsOf(lines));
+        renderBadge();
+        renderDrawer();
+    }
 
     function add(id, qty = 1) {
-        const items = read();
-        const found = items.find((item) => item.id === id && item.qty === qty);
-        if (found) found.units += 1;
-        else items.push({ id, qty, units: 1 });
-        write(items);
-        renderBadge();
-        showToast(id, qty, totalOf(items));
+        const lines = linesOf(read());
+        const amount = isDisplay(id) ? qty : 1;
+        const found = lines.find((line) => line.id === id);
+        if (found) found.count = Math.min(found.count + amount, MAX_PER_LINE);
+        else lines.push({ id, count: amount });
+        setLines(lines);
+        showToast(id, qty, totalOf(read()));
     }
 
     // Va a Tiendanube. La tienda carga el resto de los productos que viajan en #cg.
@@ -67,21 +108,133 @@ const Cart = (() => {
         cartLink.href = CART_URL;
         cartLink.setAttribute('aria-label', 'Ver carrito');
         cartLink.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-8H6.2M9.5 20a1 1 0 1 0 0-.01M17 20a1 1 0 1 0 0-.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="cart-count" hidden></span>';
+        cartLink.setAttribute('aria-haspopup', 'dialog');
         cartLink.addEventListener('click', (event) => {
             event.preventDefault();
-            checkout();
+            openDrawer();
         });
         badge = cartLink.querySelector('.cart-count');
+        const instagram = document.createElement('a');
+        instagram.className = 'cart-toggle nav-ig';
+        instagram.href = 'https://www.instagram.com/carteg.nfc/';
+        instagram.target = '_blank';
+        instagram.rel = 'noopener';
+        instagram.setAttribute('aria-label', 'Seguinos en Instagram');
+        instagram.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>';
         navButton.replaceWith(actions);
-        actions.append(cartLink, navButton);
+        actions.append(instagram, cartLink, navButton);
     }
 
     function renderBadge() {
         if (!badge) return;
-        const count = read().reduce((sum, item) => sum + item.units, 0);
+        const count = linesOf(read()).reduce((sum, line) => sum + line.count, 0);
         badge.textContent = count;
         badge.hidden = count === 0;
     }
+
+    // Panel lateral del carrito
+    const drawer = document.createElement('div');
+    drawer.className = 'cart-drawer';
+    drawer.hidden = true;
+    drawer.innerHTML = `
+        <div class="cart-backdrop" data-close></div>
+        <aside class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+            <header class="cart-head">
+                <h2 id="cart-title">Tu carrito</h2>
+                <button type="button" class="cart-close" data-close aria-label="Cerrar carrito">&times;</button>
+            </header>
+            <ul class="cart-lines"></ul>
+            <div class="cart-empty">
+                <p>Tu carrito está vacío.</p>
+                <a class="btn" href="catalogo.html">Ver productos</a>
+            </div>
+            <footer class="cart-foot">
+                <span class="cart-ship-note"></span>
+                <span class="ship-bar" aria-hidden="true"><i></i></span>
+                <div class="cart-total"><span>Total</span><strong></strong></div>
+                <small class="cart-foot-note">El envío se calcula en el próximo paso, con tu código postal.</small>
+                <button type="button" class="btn btn-wide cart-pay">Finalizar y pagar</button>
+            </footer>
+        </aside>`;
+    document.body.append(drawer);
+    const linesEl = drawer.querySelector('.cart-lines');
+    let lastFocus = null;
+
+    function lineDetail({ id, count }) {
+        if (!isDisplay(id)) return PRODUCTS[id].detail || 'Combo de displays';
+        const packs = Math.floor(count / 3);
+        const label = `${count} ${count === 1 ? 'display' : 'displays'}`;
+        return packs ? `${label} · precio de pack aplicado` : label;
+    }
+
+    function renderDrawer() {
+        const lines = linesOf(read());
+        const total = lines.reduce((sum, line) => sum + lineTotal(line), 0);
+        drawer.classList.toggle('is-empty', lines.length === 0);
+        linesEl.innerHTML = lines.map((line) => {
+            const product = PRODUCTS[line.id];
+            const thumbs = product.models.map((model) => `<img src="assets/${model}.jpg?v=3" alt="" width="64" height="80" loading="lazy">`).join('');
+            return `
+                <li class="cart-line" data-id="${line.id}">
+                    <span class="cart-thumb${product.models.length > 1 ? ' is-combo' : ''}">${thumbs}</span>
+                    <span class="cart-line-info">
+                        <strong>${product.name}</strong>
+                        <small>${lineDetail(line)}</small>
+                        <span class="cart-qty">
+                            <button type="button" data-step="-1" aria-label="Quitar uno de ${product.name}">−</button>
+                            <output aria-live="polite">${line.count}</output>
+                            <button type="button" data-step="1" aria-label="Sumar uno de ${product.name}"${line.count >= MAX_PER_LINE ? ' disabled' : ''}>+</button>
+                        </span>
+                    </span>
+                    <span class="cart-line-side">
+                        <strong>${money(lineTotal(line))}</strong>
+                        <button type="button" class="cart-remove" data-remove>Quitar</button>
+                    </span>
+                </li>`;
+        }).join('');
+        drawer.querySelector('.cart-total strong').textContent = money(total);
+        drawer.querySelector('.cart-ship-note').textContent = total ? shippingNote(total) : '';
+        drawer.querySelector('.ship-bar i').style.width = `${Math.min(total / FREE_SHIPPING_OVER, 1) * 100}%`;
+        drawer.querySelector('.cart-pay').disabled = lines.length === 0;
+    }
+
+    function openDrawer() {
+        toast.hidden = true;
+        renderDrawer();
+        lastFocus = document.activeElement;
+        drawer.hidden = false;
+        document.documentElement.classList.add('cart-open');
+        drawer.querySelector('.cart-close').focus();
+    }
+
+    function closeDrawer() {
+        drawer.hidden = true;
+        document.documentElement.classList.remove('cart-open');
+        if (lastFocus) lastFocus.focus();
+    }
+
+    drawer.addEventListener('click', (event) => {
+        if (event.target.closest('[data-close]')) {
+            closeDrawer();
+            return;
+        }
+        const row = event.target.closest('.cart-line');
+        if (!row) return;
+        const lines = linesOf(read());
+        const line = lines.find((item) => item.id === row.dataset.id);
+        if (!line) return;
+        const step = event.target.closest('[data-step]');
+        if (step) line.count = Math.min(line.count + Number(step.dataset.step), MAX_PER_LINE);
+        else if (event.target.closest('[data-remove]')) line.count = 0;
+        else return;
+        setLines(lines);
+        const again = linesEl.querySelector(`[data-id="${row.dataset.id}"] [data-step="${step ? step.dataset.step : ''}"]`);
+        (again || drawer.querySelector('.cart-close')).focus();
+    });
+    drawer.querySelector('.cart-pay').addEventListener('click', checkout);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !drawer.hidden) closeDrawer();
+    });
 
     // Aviso de producto agregado
     const toast = document.createElement('div');
@@ -92,17 +245,18 @@ const Cart = (() => {
         <button type="button" class="cart-toast-close" aria-label="Cerrar aviso">&times;</button>
         <strong class="cart-toast-title"></strong>
         <span class="cart-toast-note"></span>
-        <button type="button" class="btn btn-wide cart-toast-pay">Ver carrito y pagar</button>`;
+        <span class="ship-bar" aria-hidden="true"><i></i></span>
+        <button type="button" class="btn btn-wide cart-toast-pay">Ver carrito</button>`;
     document.body.append(toast);
-    toast.querySelector('.cart-toast-pay').addEventListener('click', checkout);
+    toast.querySelector('.cart-toast-pay').addEventListener('click', openDrawer);
     toast.querySelector('.cart-toast-close').addEventListener('click', () => {
         toast.hidden = true;
     });
 
     function shippingNote(total) {
-        if (total > FREE_SHIPPING_OVER) return 'Tenés envío gratis';
-        if (total === PRICES[2]) return `Por ${money(PRICES[3] - PRICES[2])} más, el pack de 3 tiene envío gratis`;
-        return `Te faltan ${money(FREE_SHIPPING_OVER - total)} para el envío gratis`;
+        if (total > FREE_SHIPPING_OVER) return '🚚 ¡Desbloqueaste el ENVÍO GRATIS!';
+        if (total === PRICES[2]) return `🚚 Por ${money(PRICES[3] - PRICES[2])} más llevás el pack de 3 con ENVÍO GRATIS`;
+        return `🚚 ¡Agregá ${money(FREE_SHIPPING_OVER - total)} más para desbloquear ENVÍO GRATIS!`;
     }
 
     let hideTimer;
@@ -111,6 +265,7 @@ const Cart = (() => {
         const label = typeof VARIANTS[id] === 'object' && qty > 1 ? `${qty} displays de ${name}` : name;
         toast.querySelector('.cart-toast-title').textContent = `${label}: agregado al carrito`;
         toast.querySelector('.cart-toast-note').textContent = shippingNote(total);
+        toast.querySelector('.ship-bar i').style.width = `${Math.min(total / FREE_SHIPPING_OVER, 1) * 100}%`;
         toast.hidden = false;
         clearTimeout(hideTimer);
         hideTimer = setTimeout(() => {
