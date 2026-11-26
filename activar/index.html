@@ -78,7 +78,7 @@ function normalizarCodigo(t) {
 const codigoUrl = normalizarCodigo(new URLSearchParams(location.search).get("c"));
 
 const TIPOS = {
-  "Reseñas": { etiqueta: "Código del negocio en Google (empieza con ChIJ) o link de “Pedir reseñas”", ayuda: "" },
+  "Reseñas": { etiqueta: "Link de Google Maps del local", ayuda: "Tocá “Buscar en Google Maps”, elegí el local → Compartir → Copiar link, y pegalo acá." },
   "Instagram": { etiqueta: "Usuario de Instagram", ayuda: "Por ejemplo: carteg.nfc" },
   "WhatsApp": { etiqueta: "Número de WhatsApp", ayuda: "Por ejemplo: 351 696-7688" },
   "Otro": { etiqueta: "Link", ayuda: "Tiene que empezar con https://" },
@@ -90,6 +90,17 @@ function normalizarWhatsapp(t) {
   if (!n.startsWith("54")) n = "549" + n;
   return n;
 }
+/* Links de Google Maps (Compartir → Copiar link): la web los lee y arma el link oficial de reseñas */
+const esLinkGoogle = v => /^https:\/\/(maps\.app\.goo\.gl|goo\.gl|g\.co|(www\.|maps\.)?google\.[a-z.]{2,8})\//i.test(String(v || "").trim());
+async function leerLinkMaps(v) {
+  let r;
+  try { r = await fetch(`/api/lugar?u=${encodeURIComponent(String(v).trim())}`); }
+  catch (e) { throw new Error("Sin conexión. Probá de nuevo."); }
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok || !datos.link) throw new Error(datos.error || "No se pudo leer ese link de Google Maps.");
+  return datos;
+}
+
 /* Devuelve [destino, error] */
 function armarDestino(tipo, valor) {
   valor = String(valor || "").trim();
@@ -177,7 +188,9 @@ async function vistaDueno(mensaje) {
         <div id="yaAsignado"></div>
         <label>Cliente<input type="text" name="cliente" maxlength="80" required></label>
         <label>A dónde lleva<select name="tipo">${Object.keys(TIPOS).map(t => `<option>${t}</option>`).join("")}</select></label>
+        <div id="filaMaps" class="fila" style="margin:-2px 0 12px"><a class="btn sec chico" id="bMaps" href="https://www.google.com/maps" target="_blank" rel="noopener">Buscar en Google Maps</a></div>
         <label><span id="etiValor"></span><input type="text" name="valor" maxlength="500" autocapitalize="none" required><span class="gris" id="ayudaValor"></span></label>
+        <p id="lugar" class="gris" hidden></p>
         <p class="error" id="errActivar" hidden></p>
         <button class="btn ancho" type="submit" id="bActivar">Activar</button>
       </form>
@@ -197,13 +210,33 @@ async function vistaDueno(mensaje) {
   const ajustar = () => {
     $("etiValor").textContent = TIPOS[f.tipo.value].etiqueta;
     $("ayudaValor").textContent = TIPOS[f.tipo.value].ayuda;
+    $("filaMaps").hidden = f.tipo.value !== "Reseñas";
+    $("bMaps").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(f.cliente.value.trim() || "Córdoba");
   };
+  /* Al pegar un link de Maps, muestra qué negocio es para confirmarlo antes de activar */
+  let lugarLeido = null, esperaLugar;
+  const revisarLugar = () => {
+    clearTimeout(esperaLugar); lugarLeido = null;
+    const v = f.valor.value.trim(), p = $("lugar");
+    if (f.tipo.value !== "Reseñas" || !esLinkGoogle(v)) { p.hidden = true; return; }
+    p.hidden = false; p.className = "gris"; p.textContent = "Buscando el local…";
+    esperaLugar = setTimeout(async () => {
+      try {
+        const datos = await leerLinkMaps(v);
+        if (f.valor.value.trim() !== v) return;
+        lugarLeido = { valor: v, ...datos };
+        p.innerHTML = `✓ Reseñas de <b>${esc(datos.nombre || "ese local")}</b>`;
+      } catch (e) { p.className = "error"; p.textContent = e.message; }
+    }, 400);
+  };
+  f.valor.addEventListener("input", revisarLugar);
+  f.cliente.addEventListener("input", ajustar);
   const mostrarExistente = () => {
     const d = displays.find(x => x.codigo === normalizarCodigo(f.codigo.value));
     $("yaAsignado").innerHTML = d ? `<div class="aviso">Este código ya lleva a <b>${esc(d.cliente)}</b> (${esc(d.tipo)}). Si guardás, se cambia el destino.</div>` : "";
     $("bActivar").textContent = d ? "Cambiar destino" : "Activar";
   };
-  f.tipo.addEventListener("change", ajustar);
+  f.tipo.addEventListener("change", () => { ajustar(); revisarLugar(); });
   f.codigo.addEventListener("input", mostrarExistente);
   ajustar(); mostrarExistente();
   if (codigoUrl && !displays.some(x => x.codigo === codigoUrl)) f.cliente.focus();
@@ -216,12 +249,22 @@ async function vistaDueno(mensaje) {
     if (!codigo) return err("Revisá el código: es el número que está abajo del QR, por ejemplo c014.");
     const cliente = f.cliente.value.trim();
     if (!cliente) return err("Poné el nombre del cliente.");
-    const [destino, problema] = armarDestino(f.tipo.value, f.valor.value);
-    if (problema) return err(problema);
     const b = $("bActivar"); b.disabled = true;
+    const valor = f.valor.value.trim();
+    let destino, lugar = "";
+    if (f.tipo.value === "Reseñas" && esLinkGoogle(valor)) {
+      try {
+        const datos = lugarLeido && lugarLeido.valor === valor ? lugarLeido : await leerLinkMaps(valor);
+        destino = datos.link; lugar = datos.nombre || "";
+      } catch (e1) { b.disabled = false; return err(e1.message); }
+    } else {
+      const [d1, problema] = armarDestino(f.tipo.value, valor);
+      if (problema) { b.disabled = false; return err(problema); }
+      destino = d1;
+    }
     try {
-      await setDoc(doc(db, "displays", codigo), { cliente, tipo: f.tipo.value, valor: f.valor.value.trim(), destino, actualizado: serverTimestamp() }, { merge: true });
-      vistaDueno(`<div class="ok"><b>¡Listo! ${esc(codigo)} ya funciona.</b><br><span class="gris">Lleva a ${esc(corto(destino))}</span><div class="fila" style="margin-top:8px"><a class="btn chico" href="/r/${esc(codigo)}" target="_blank" rel="noopener">Probar ahora</a></div></div>`);
+      await setDoc(doc(db, "displays", codigo), { cliente, tipo: f.tipo.value, valor, destino, lugar, actualizado: serverTimestamp() }, { merge: true });
+      vistaDueno(`<div class="ok"><b>¡Listo! ${esc(codigo)} ya funciona.</b><br><span class="gris">Lleva a ${lugar ? "las reseñas de " + esc(lugar) : esc(corto(destino))}</span><div class="fila" style="margin-top:8px"><a class="btn chico" href="/r/${esc(codigo)}" target="_blank" rel="noopener">Probar ahora</a></div></div>`);
     } catch (e2) {
       b.disabled = false;
       err(/permission/.test(e2.code || "") ? "Tu cuenta no tiene permiso para activar." : "No se pudo guardar. Revisá la conexión y probá de nuevo.");
