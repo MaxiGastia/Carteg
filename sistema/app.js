@@ -24,7 +24,7 @@ const DEMO = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? new URLSearc
 /* ---------- Constantes ---------- */
 const CATEGORIAS = {
   ingreso: ["Venta", "Otro ingreso"],
-  egreso: ["Insumos", "Embalaje", "Inversión", "Publicidad", "Envíos", "Otro gasto"],
+  egreso: ["Insumos", "Embalaje", "Inversión", "Publicidad", "Envíos", "Comisión de cobro", "Otro gasto"],
 };
 const ESTADOS = ["Pendiente", "Enviado", "Respondió", "Interesado", "Cliente", "Descartado"];
 const PERIODOS = [["hoy", "Hoy"], ["semana", "Esta semana"], ["mes", "Este mes"], ["anio", "Este año"], ["todo", "Todo"]];
@@ -237,7 +237,8 @@ function tile(titulo, valor, nota) {
   return `<div class="tile"><small>${esc(titulo)}</small><b>${esc(valor)}</b>${nota ? `<em>${esc(nota)}</em>` : ""}</div>`;
 }
 const signo = n => n > 0 ? "A favor" : n < 0 ? "En contra" : "";
-const chipEstado = m => m.estado === "pendiente" ? `<span class="chip ojo">Pendiente</span>` : m.estado === "rechazada" ? `<span class="chip">Rechazada</span>` : "";
+const chipEstado = m => (m.origen === "tiendanube" ? `<span class="chip">Tiendanube</span> ` : "") +
+  (m.estado === "pendiente" ? `<span class="chip ojo">Pendiente</span>` : m.estado === "rechazada" ? `<span class="chip">${m.origen === "tiendanube" ? "Cancelada" : "Rechazada"}</span>` : "");
 
 /* ---------- Navegación ---------- */
 const NAV_DUENO = [["metricas", "Métricas"], ["movimientos", "Ingresos y egresos"], ["aprobar", "Aprobar ventas"], ["vendedores", "Vendedores"], ["locales", "Locales"], ["displays", "Displays"]];
