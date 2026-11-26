@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0c08">
+<title>Carteg Sistema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<div id="pantallaIngreso" class="ingreso" hidden>
+  <div class="ingreso-caja">
+    <div class="marca">Carteg <span>Sistema</span></div>
+    <form id="fIngreso" class="panel">
+      <h1>Ingresar</h1>
+      <label>Mail<input type="email" name="mail" autocomplete="username" required></label>
+      <label>Contraseña<input type="password" name="clave" autocomplete="current-password" required></label>
+      <p class="error" id="errIngreso" hidden></p>
+      <button class="btn ancho" type="submit">Ingresar</button>
+      <button class="link" type="button" id="olvide">Olvidé mi contraseña</button>
+    </form>
+  </div>
+</div>
+
+<div id="pantallaCarga" class="ingreso"><p class="gris">Cargando…</p></div>
+
+<div class="app" id="pantallaApp" hidden>
+  <aside class="lateral">
+    <div class="marca">Carteg <span>Sistema</span></div>
+    <nav id="nav" aria-label="Secciones"></nav>
+    <div class="copia">
+      <p id="quien"></p>
+      <div id="herramientas"></div>
+      <button class="btn sec chico" id="salir" type="button">Salir</button>
+      <input id="archivo" type="file" accept=".json,application/json" hidden>
+    </div>
+  </aside>
+  <main>
+    <div id="aviso" class="aviso" hidden></div>
+    <div id="vista"></div>
+  </main>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

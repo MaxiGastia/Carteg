@@ -284,10 +284,16 @@ async function vistaDueno(mensaje) {
   });
 }
 
-onAuthStateChanged(auth, usuario => {
+/* Pueden activar el dueño y los vendedores con acceso activo */
+onAuthStateChanged(auth, async usuario => {
   if (!usuario) return codigoUrl ? vistaPublica() : vistaIngreso();
-  if (usuario.uid !== DUENO) return vistaSinPermiso(usuario);
-  vistaDueno();
+  if (usuario.uid === DUENO) return vistaDueno();
+  try {
+    const s = await getDoc(doc(db, "usuarios", usuario.uid));
+    const p = s.exists() ? s.data() : null;
+    if (p && p.rol === "vendedor" && p.activo !== false) return vistaDueno();
+  } catch (e) { console.error(e); }
+  vistaSinPermiso(usuario);
 });
 </script>
 </body>
