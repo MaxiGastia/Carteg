@@ -49,7 +49,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* Configuración pública de Firebase (no es secreta: la seguridad está en las reglas de Firestore) */
 const app = initializeApp({
@@ -171,8 +171,11 @@ function vistaSinPermiso(usuario) {
 }
 
 let displays = [];
+/* El dueño ve todos; un vendedor solo los que activó él */
+const esDuenoActual = () => auth.currentUser && auth.currentUser.uid === DUENO;
 async function cargarDisplays() {
-  const snap = await getDocs(collection(db, "displays"));
+  const col = collection(db, "displays");
+  const snap = await getDocs(esDuenoActual() ? col : query(col, where("activadoPor", "==", auth.currentUser.uid)));
   displays = snap.docs.map(d => ({ codigo: d.id, ...d.data() })).sort((a, b) => b.codigo.localeCompare(a.codigo));
 }
 
@@ -200,7 +203,7 @@ async function vistaDueno(mensaje) {
       </form>
     </section>
     <section class="panel">
-      <h2>Displays activados (${displays.length})</h2>
+      <h2>${esDuenoActual() ? "Displays activados" : "Tus displays activados"} (${displays.length})</h2>
       ${displays.length ? displays.map(d => `<div class="item">
         <div><code>${esc(d.codigo)}</code> ${esc(d.cliente)} · <span class="gris">${esc(d.tipo)}</span><div class="destino">${esc(corto(d.destino))}</div></div>
         <div class="gris" style="text-align:right"><b>${Number(d.toques || 0)}</b> toques<br>${Number((d.mes || {})[mes] || 0)} este mes</div>
@@ -235,10 +238,24 @@ async function vistaDueno(mensaje) {
   };
   f.valor.addEventListener("input", revisarLugar);
   f.cliente.addEventListener("input", ajustar);
-  const mostrarExistente = () => {
-    const d = displays.find(x => x.codigo === normalizarCodigo(f.codigo.value));
+  /* Si el código ya lo activó otra persona, un vendedor no lo puede cambiar */
+  let ajeno = false, revisando = 0;
+  const mostrarExistente = async () => {
+    const codigo = normalizarCodigo(f.codigo.value);
+    const d = displays.find(x => x.codigo === codigo);
+    ajeno = false;
     $("yaAsignado").innerHTML = d ? `<div class="aviso">Este código ya lleva a <b>${esc(d.cliente)}</b> (${esc(d.tipo)}). Si guardás, se cambia el destino.</div>` : "";
     $("bActivar").textContent = d ? "Cambiar destino" : "Activar";
+    $("bActivar").disabled = false;
+    if (d || !codigo || esDuenoActual()) return;
+    const n = ++revisando;
+    try {
+      const s = await getDoc(doc(db, "displays", codigo));
+      if (n !== revisando || !s.exists()) return;
+      ajeno = true;
+      $("yaAsignado").innerHTML = `<div class="aviso">Este código ya está activado por otra persona. No lo podés cambiar; si hay un error, avisale a Carteg.</div>`;
+      $("bActivar").disabled = true;
+    } catch (e) { /* sin conexión: lo frena la base al guardar */ }
   };
   f.tipo.addEventListener("change", () => { ajustar(); revisarLugar(); });
   f.codigo.addEventListener("input", mostrarExistente);
@@ -250,6 +267,7 @@ async function vistaDueno(mensaje) {
     const err = t => { $("errActivar").textContent = t; $("errActivar").hidden = false; };
     $("errActivar").hidden = true;
     const codigo = normalizarCodigo(f.codigo.value);
+    if (ajeno) return err("Este código ya está activado por otra persona. Avisale a Carteg.");
     if (!codigo) return err("Revisá el código: es el número que está abajo del QR, por ejemplo c014.");
     const cliente = f.cliente.value.trim();
     if (!cliente) return err("Poné el nombre del cliente.");
@@ -267,11 +285,13 @@ async function vistaDueno(mensaje) {
       destino = d1;
     }
     try {
-      await setDoc(doc(db, "displays", codigo), { cliente, tipo: f.tipo.value, valor, destino, lugar, actualizado: serverTimestamp() }, { merge: true });
+      const datos = { cliente, tipo: f.tipo.value, valor, destino, lugar, actualizado: serverTimestamp() };
+      if (!displays.some(x => x.codigo === codigo)) datos.activadoPor = auth.currentUser.uid;
+      await setDoc(doc(db, "displays", codigo), datos, { merge: true });
       vistaDueno(`<div class="ok"><b>¡Listo! ${esc(codigo)} ya funciona.</b><br><span class="gris">Lleva a ${lugar ? "las reseñas de " + esc(lugar) : esc(corto(destino))}</span><div class="fila" style="margin-top:8px"><a class="btn chico" href="/r/${esc(codigo)}" target="_blank" rel="noopener">Probar ahora</a></div></div>`);
     } catch (e2) {
       b.disabled = false;
-      err(/permission/.test(e2.code || "") ? "Tu cuenta no tiene permiso para activar." : "No se pudo guardar. Revisá la conexión y probá de nuevo.");
+      err(/permission/.test(e2.code || "") ? "No tenés permiso para cambiar este display. Si es un error, avisale a Carteg." : "No se pudo guardar. Revisá la conexión y probá de nuevo.");
     }
   });
 
