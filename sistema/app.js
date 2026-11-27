@@ -39,7 +39,7 @@ let db = vacio();
 let escuchas = [];
 
 function vacio() {
-  return { movimientos: [], vendedores: [], seguimiento: {}, locales: [], usuarios: [], config: { ultimoCodigo: 0 }, ranking: null };
+  return { movimientos: [], vendedores: [], seguimiento: {}, locales: [], usuarios: [], postulantes: [], config: { ultimoCodigo: 0 }, ranking: null };
 }
 const pref = (k, def) => { try { return localStorage.getItem("carteg-sistema:" + k) || def; } catch (e) { return def; } };
 const guardarPref = (k, v) => { try { localStorage.setItem("carteg-sistema:" + k, v); } catch (e) {} };
@@ -90,8 +90,8 @@ function descargar(nombre, contenido, tipo) {
 
 /* ---------- Sincronización con Firebase (solo el dueño escribe así) ----------
    Se guarda una "foto" de lo último que hay en Firebase; al guardar se mandan solo los documentos que cambiaron. */
-const COLS = { movimientos: "lista", vendedores: "lista", locales: "lista", seguimiento: "mapa" };
-const espejo = { movimientos: new Map(), vendedores: new Map(), locales: new Map(), seguimiento: new Map(), config: "", ranking: "" };
+const COLS = { movimientos: "lista", vendedores: "lista", locales: "lista", postulantes: "lista", seguimiento: "mapa" };
+const espejo = { movimientos: new Map(), vendedores: new Map(), locales: new Map(), postulantes: new Map(), seguimiento: new Map(), config: "", ranking: "" };
 function ordenado(v) {
   if (Array.isArray(v)) return v.map(ordenado);
   if (v && typeof v === "object") return Object.keys(v).sort().reduce((o, k) => (v[k] === undefined ? o : (o[k] = ordenado(v[k]), o)), {});
@@ -147,15 +147,32 @@ function repintarSiSePuede() {
 document.addEventListener("focusout", () => setTimeout(() => { if (pendienteRepintar) repintarSiSePuede(); }, 250));
 $("dlg").addEventListener("close", () => setTimeout(() => { if (pendienteRepintar) repintarSiSePuede(); }, 50));
 
+/* Los mensajes viejos decían "sin QR ni app"; ahora los displays traen QR de respaldo */
+function actualizarMensajesLocales() {
+  let cambios = 0;
+  const arreglar = t => typeof t !== "string" ? t
+    : t.replace(/, sin QR ni app/g, ", sin bajar ninguna app").replace(/Sin QR, sin app y con pago único/g, "Sin bajar ninguna app y con pago único");
+  for (const l of db.locales) {
+    for (const k of ["mensaje_whatsapp", "mensaje_instagram", "mensaje_seguimiento"]) {
+      const nuevo = arreglar(l[k]);
+      if (nuevo !== l[k]) { l[k] = nuevo; cambios++; }
+    }
+  }
+  if (cambios) guardar();
+}
+
 function escucharDueno() {
-  const faltan = new Set(["movimientos", "vendedores", "seguimiento", "locales", "usuarios", "config"]);
-  const listo = n => { if (faltan.delete(n) && !faltan.size) mostrarApp(); else if (!faltan.size) repintarSiSePuede(); };
+  const faltan = new Set(["movimientos", "vendedores", "seguimiento", "locales", "usuarios", "config", "postulantes"]);
+  const listo = n => {
+    if (faltan.delete(n) && !faltan.size) { actualizarMensajesLocales(); mostrarApp(); }
+    else if (!faltan.size) repintarSiSePuede();
+  };
   const lista = col => onSnapshot(collection(fs, col), s => {
     db[col] = s.docs.map(d => ({ id: d.id, ...d.data() }));
     if (espejo[col]) espejo[col] = new Map(s.docs.map(d => [d.id, estable(d.data())]));
     listo(col);
   }, errorEscucha);
-  escuchas.push(lista("movimientos"), lista("vendedores"), lista("locales"), lista("usuarios"));
+  escuchas.push(lista("movimientos"), lista("vendedores"), lista("locales"), lista("usuarios"), lista("postulantes"));
   escuchas.push(onSnapshot(collection(fs, "seguimiento"), s => {
     db.seguimiento = Object.fromEntries(s.docs.map(d => [d.id, d.data()]));
     espejo.seguimiento = new Map(s.docs.map(d => [d.id, estable(d.data())]));
@@ -241,7 +258,7 @@ const chipEstado = m => (m.origen === "tiendanube" ? `<span class="chip">Tiendan
   (m.estado === "pendiente" ? `<span class="chip ojo">Pendiente</span>` : m.estado === "rechazada" ? `<span class="chip">${m.origen === "tiendanube" ? "Cancelada" : "Rechazada"}</span>` : "");
 
 /* ---------- Navegación ---------- */
-const NAV_DUENO = [["metricas", "Métricas"], ["movimientos", "Ingresos y egresos"], ["aprobar", "Aprobar ventas"], ["vendedores", "Vendedores"], ["locales", "Locales"], ["displays", "Displays"]];
+const NAV_DUENO = [["metricas", "Métricas"], ["movimientos", "Ingresos y egresos"], ["aprobar", "Aprobar ventas"], ["vendedores", "Vendedores"], ["postulantes", "Postulantes"], ["locales", "Locales"], ["displays", "Displays"]];
 const NAV_VENDEDOR = [["inicio", "Mis métricas"], ["misventas", "Mis ventas"], ["ranking", "Ranking"], ["displays", "Displays"]];
 const navActual = () => rol === "dueno" ? NAV_DUENO : NAV_VENDEDOR;
 let vista = "";
@@ -251,18 +268,19 @@ const filtrosLoc = { q: "", estado: "" };
 function pintarNav() {
   const p = pendientes().length;
   $("nav").innerHTML = navActual().map(([k, t]) =>
-    `<button data-v="${k}" ${k === vista ? 'aria-current="page"' : ""}>${t}${k === "aprobar" && p ? ` <span class="badge">${p}</span>` : ""}</button>`).join("");
+    `<button data-v="${k}" ${k === vista ? 'aria-current="page"' : ""}>${t}${k === "aprobar" && p ? ` <span class="badge">${p}</span>` : ""}${k === "postulantes" && nuevosPost() ? ` <span class="badge">${nuevosPost()}</span>` : ""}</button>`).join("");
 }
 function pintar() {
   if (!navActual().some(([k]) => k === vista)) vista = navActual()[0][0];
   pintarNav();
-  const vistas = { metricas: vistaMetricas, movimientos: vistaMovimientos, aprobar: vistaAprobar, vendedores: vistaVendedores, locales: vistaLocales,
+  const vistas = { metricas: vistaMetricas, movimientos: vistaMovimientos, aprobar: vistaAprobar, vendedores: vistaVendedores, postulantes: vistaPostulantes, locales: vistaLocales,
     displays: vistaDisplays, inicio: vistaMisMetricas, misventas: vistaMisVentas, ranking: vistaRanking };
   vistas[vista]();
   pintarAviso();
 }
 function pintarAviso() {
   const av = $("aviso");
+  if (DEMO) { av.hidden = false; av.innerHTML = "<b>Modo de prueba:</b> estos datos son de ejemplo y no se guardan. Tu sistema real está en carteg.com.ar/sistema."; return; }
   if (errorSync) { av.hidden = false; av.textContent = "No se pudieron guardar los últimos cambios. Revisá la conexión: se reintenta en el próximo cambio."; }
   else av.hidden = true;
 }
@@ -486,6 +504,33 @@ function vistaVendedores() {
         <td>${m.vendedorId ? `<input type="checkbox" data-a="pagada" data-id="${esc(m.id)}" aria-label="Comisión pagada" ${m.comisionPagada ? "checked" : ""}>` : ""}</td></tr>`).join("")}
       </tbody></table>` : `<div class="vacio">Todavía no hay ventas cargadas.</div>`}
     </div></section>`;
+}
+
+/* ---------- Dueño: Postulantes (se anotan desde carteg.com.ar/vendedores) ---------- */
+const ESTADOS_POST = ["Nuevo", "Contactado", "Sumado", "Descartado"];
+const nuevosPost = () => (db.postulantes || []).filter(p => (p.estado || "Nuevo") === "Nuevo").length;
+function vistaPostulantes() {
+  const lista = [...(db.postulantes || [])].sort((a, b) => (b.creado || 0) - (a.creado || 0));
+  const fecha = ms => ms ? fechaCorta(aTexto(new Date(ms))) : "";
+  $("vista").innerHTML = `
+    <div class="cabeza"><div><h1>Postulantes</h1><p>Personas que quieren vender displays. Se anotan en <a href="/vendedores" target="_blank" rel="noopener">carteg.com.ar/vendedores</a>.</p></div></div>
+    ${lista.length ? `<div class="lista">${lista.map(p => {
+      const wa = normalizarWhatsapp(p.whatsapp);
+      const texto = encodeURIComponent(`Hola ${p.nombre || ""}! Soy Maxi, de Carteg. Vi que te postulaste para vender displays. ¿Tenés unos minutos para que te cuente cómo es?`);
+      return `<article class="panel local" data-id="${esc(p.id)}">
+        <div class="top"><div><div class="nombre">${esc(p.nombre)}</div>
+          <div class="meta">${[esc(p.zona), esc(p.disponibilidad), p.edad ? esc(p.edad) + " años" : "", fecha(p.creado)].filter(Boolean).join(" · ")}</div></div>
+          <span class="chip ${(p.estado || "Nuevo") === "Nuevo" ? "ojo" : ""}">${esc(p.estado || "Nuevo")}</span></div>
+        ${p.experiencia ? `<div class="op"><span>Experiencia:</span> ${esc(p.experiencia)}</div>` : ""}
+        ${p.mensaje ? `<div class="op"><span>Mensaje:</span> ${esc(p.mensaje)}</div>` : ""}
+        <div class="acts">
+          ${wa ? `<a class="btn" href="https://wa.me/${wa}?text=${texto}" target="_blank" rel="noopener">WhatsApp</a>` : ""}
+          ${p.instagram ? `<a class="btn sec" href="https://www.instagram.com/${encodeURIComponent(String(p.instagram).replace(/^@/, ""))}/" target="_blank" rel="noopener">Instagram</a>` : ""}
+          <select data-a="estado-post" aria-label="Estado">${ESTADOS_POST.map(e => `<option ${e === (p.estado || "Nuevo") ? "selected" : ""}>${e}</option>`).join("")}</select>
+          <button class="link" data-a="borrar-post" type="button">Borrar</button>
+        </div>
+        <textarea data-a="nota-post" aria-label="Notas" placeholder="Notas (qué hablaron, cuándo arranca…)">${esc(p.nota || "")}</textarea>
+      </article>`; }).join("")}</div>` : `<div class="vacio">Todavía no se postuló nadie. Compartí el flyer o el link carteg.com.ar/vendedores.</div>`}`;
 }
 
 /* ---------- Dueño: Locales ---------- */
@@ -830,6 +875,10 @@ function normalizarWhatsapp(t) {
   let n = String(t || "").replace(/\D/g, "");
   if (!n) return "";
   if (n.startsWith("0")) n = n.slice(1);
+  /* Sin código de país, con el "15" del celular adentro (ej: 351 15 555-1234): se saca el 15 */
+  if (!n.startsWith("54") && n.length === 12) {
+    for (const i of [3, 4, 2]) if (n.substr(i, 2) === "15") { n = n.slice(0, i) + n.slice(i + 2); break; }
+  }
   if (!n.startsWith("54")) n = "549" + n;
   return n;
 }
@@ -963,8 +1012,13 @@ $("vista").addEventListener("click", async e => {
     try { if (!DEMO) await deleteDoc(doc(fs, "movimientos", mov.id)); else { db.movimientos = db.movimientos.filter(x => x !== mov); pintar(); } toast("Venta borrada"); }
     catch (e2) { toast("No se pudo borrar. Revisá la conexión."); }
   }
+  if (a === "borrar-post") {
+    const pid = b.closest("[data-id]").dataset.id, p = db.postulantes.find(x => x.id === pid);
+    if (p && confirm(`¿Borrar la postulación de ${p.nombre}? No se puede deshacer.`)) { db.postulantes = db.postulantes.filter(x => x !== p); guardar(); pintar(); }
+    return;
+  }
   const tarjeta = b.closest(".local");
-  if (tarjeta) {
+  if (tarjeta && vista === "locales") {
     const lid = tarjeta.dataset.id, l = db.locales.find(x => x.id === lid);
     if (a === "wa") marcarEnviado(lid);
     if (a === "ig") {
@@ -989,6 +1043,10 @@ $("vista").addEventListener("change", e => {
     guardar(); pintar();
   }
   if (b.dataset.a === "pagada") { db.movimientos.find(x => x.id === b.dataset.id).comisionPagada = b.checked; guardar(); pintar(); }
+  if (b.dataset.a === "estado-post") {
+    const p = db.postulantes.find(x => x.id === b.closest("[data-id]").dataset.id);
+    if (p) { p.estado = b.value; guardar(); pintar(); }
+  }
   if (b.dataset.a === "estado") {
     const s = seg(b.closest(".local").dataset.id);
     s.estado = b.value;
@@ -998,6 +1056,12 @@ $("vista").addEventListener("change", e => {
 });
 let esperaNota;
 $("vista").addEventListener("input", e => {
+  const bp = e.target.closest("[data-a='nota-post']");
+  if (bp) {
+    const p = db.postulantes.find(x => x.id === bp.closest("[data-id]").dataset.id);
+    if (p) { p.nota = bp.value; clearTimeout(esperaNota); esperaNota = setTimeout(guardar, 700); }
+    return;
+  }
   const b = e.target.closest("[data-a='nota']"); if (!b) return;
   seg(b.closest(".local").dataset.id).nota = b.value;
   clearTimeout(esperaNota); esperaNota = setTimeout(guardar, 700);
@@ -1064,6 +1128,7 @@ if (DEMO) {
   } else {
     rol = "dueno";
     db.usuarios = [{ id: "u1", rol: "vendedor", vendedorId: "zoe", nombre: "Zoe", email: "zoe@ejemplo.com", activo: true }];
+    db.postulantes = [{ id: "p1", nombre: "Juan Ejemplo", whatsapp: "351 555-1234", zona: "Alta Córdoba", edad: "24", disponibilidad: "Medio tiempo", experiencia: "Vendí ropa por Instagram", mensaje: "", estado: "Nuevo", creado: Date.now() }];
   }
   mostrarApp();
 } else {

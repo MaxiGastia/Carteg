@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trabajá con Carteg: vendedores | Carteg</title>
+    <meta name="description" content="Buscamos vendedores en Córdoba para ofrecer displays NFC a comercios. Comisión de hasta 20% por venta, sin invertir y con tus horarios.">
+    <meta property="og:title" content="Buscamos vendedores · Carteg">
+    <meta property="og:description" content="Ganá plata extra vendiendo displays NFC a comercios de tu zona. Hasta 20% de comisión, sin invertir.">
+    <meta property="og:image" content="https://www.carteg.com.ar/assets/tienda/combo-completo.jpg">
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css?v=24">
+    <style>
+        .vend-top { display: flex; align-items: center; justify-content: space-between; padding-block: 18px; }
+        .vend-top a.brand-link { display: inline-flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 1.25rem; }
+        .vend-top img { width: 30px; height: 30px; }
+        .vend-hero { display: grid; gap: 28px; align-items: center; padding-block: 40px 56px; }
+        @media (min-width: 900px) { .vend-hero { grid-template-columns: 1.1fr .9fr; } }
+        .vend-hero h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1; letter-spacing: -.03em; margin: 8px 0 18px; }
+        .vend-hero h1 em { font-family: 'Instrument Serif', serif; font-weight: 400; color: var(--accent); }
+        .vend-hero p.lead { color: var(--muted); font-size: 1.125rem; max-width: 560px; margin: 0 0 24px; }
+        .vend-hero img { width: 100%; border-radius: 22px; aspect-ratio: 4 / 3; object-fit: cover; }
+        .vend-eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .8125rem; }
+        .vend-perks { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px; color: var(--text); font-weight: 600; }
+        .vend-perks span::before { content: "✓ "; color: var(--accent); }
+        .vend-sec { padding-block: 44px; border-top: 1px solid var(--line); }
+        .vend-sec h2 { font-size: clamp(1.75rem, 4.5vw, 2.5rem); letter-spacing: -.02em; margin: 6px 0 18px; }
+        .vend-sec h2 em { font-family: 'Instrument Serif', serif; font-weight: 400; color: var(--accent); }
+        .vend-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .vend-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+        .vend-card b.n { display: block; color: var(--accent); font-size: 1.5rem; margin-bottom: 6px; }
+        .vend-card h3 { margin: 0 0 6px; font-size: 1.125rem; }
+        .vend-card p { margin: 0; color: var(--muted); }
+        .vend-tiers { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); margin-bottom: 14px; }
+        .vend-tier { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 8px; }
+        .vend-tier b { display: block; font-size: clamp(2rem, 7vw, 3rem); line-height: 1; letter-spacing: -.03em; }
+        .vend-tier span { color: var(--muted); font-size: .875rem; }
+        .vend-tier:last-child { background: rgba(201, 247, 58, .1); border-color: rgba(201, 247, 58, .4); }
+        .vend-note { color: var(--muted); }
+        .vend-form { display: grid; gap: 14px; max-width: 620px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+        .vend-form label { display: grid; gap: 6px; font-weight: 600; font-size: .9375rem; }
+        .vend-form label small { color: var(--muted); font-weight: 400; }
+        .vend-form input, .vend-form select, .vend-form textarea { font: inherit; color: var(--text); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-height: 48px; width: 100%; }
+        .vend-form textarea { min-height: 96px; resize: vertical; }
+        .vend-form .dos { display: grid; gap: 14px; grid-template-columns: 1fr; }
+        @media (min-width: 560px) { .vend-form .dos { grid-template-columns: 1fr 1fr; } }
+        .vend-form .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+        .vend-form .error { color: #ffb4a6; margin: 0; }
+        .vend-ok { max-width: 620px; background: rgba(201, 247, 58, .08); border: 1px solid rgba(201, 247, 58, .4); border-radius: 20px; padding: 24px; }
+        .vend-ok h3 { margin: 0 0 8px; font-size: 1.375rem; }
+        .vend-ok p { color: var(--muted); margin: 0 0 14px; }
+        .vend-faq details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+        .vend-faq summary { cursor: pointer; font-weight: 600; }
+        .vend-faq p { color: var(--muted); margin: 8px 0 0; }
+        .vend-foot { padding-block: 32px; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line); }
+        .vend-foot a { color: var(--muted); }
+    </style>
+</head>
+<body>
+    <header class="wrap vend-top">
+        <a class="brand-link" href="/"><img src="../assets/favicon.svg" alt="" width="30" height="30">Carteg</a>
+        <a class="btn btn-small" href="#postulate">Postularme</a>
+    </header>
+
+    <main>
+        <section class="wrap vend-hero">
+            <div>
+                <span class="vend-eyebrow">Trabajá con Carteg</span>
+                <h1>Ganá plata extra <em>vendiendo a comercios</em></h1>
+                <p class="lead">Buscamos vendedores en Córdoba para ofrecer nuestros displays NFC a cafés, gimnasios, peluquerías y todo tipo de locales. El cliente del local apoya el celular o escanea el QR y le deja una reseña en Google, lo sigue en Instagram o le escribe por WhatsApp.</p>
+                <a class="btn" href="#postulate">Quiero postularme</a>
+                <div class="vend-perks"><span>Hasta 20% de comisión</span><span>Sin invertir</span><span>Tus horarios</span><span>Sin experiencia</span></div>
+            </div>
+            <img src="../assets/tienda/combo-completo.jpg" alt="Displays NFC de Carteg para reseñas de Google, Instagram y WhatsApp" width="1200" height="900">
+        </section>
+
+        <section class="wrap vend-sec">
+            <span class="vend-eyebrow">Cómo es</span>
+            <h2>Tres pasos <em>y cobrás</em></h2>
+            <div class="vend-grid">
+                <div class="vend-card"><b class="n">1</b><h3>Visitás locales de tu zona</h3><p>Hablás con el dueño o el encargado. Te damos el speech y un display de muestra para que lo prueben.</p></div>
+                <div class="vend-card"><b class="n">2</b><h3>Lo dejás funcionando</h3><p>Escaneás el QR del display con tu celular, elegís a dónde lleva y listo: funciona en el momento.</p></div>
+                <div class="vend-card"><b class="n">3</b><h3>Cobrás tu comisión</h3><p>Te quedás con tu parte en el momento y cargás la venta en tu panel, donde ves todo lo que ganaste.</p></div>
+            </div>
+        </section>
+
+        <section class="wrap vend-sec">
+            <span class="vend-eyebrow">Cuánto ganás</span>
+            <h2>Más vendés, <em>más cobrás</em></h2>
+            <div class="vend-tiers">
+                <div class="vend-tier"><b>10%</b><span>Displays 1 a 9 de la semana</span></div>
+                <div class="vend-tier"><b>15%</b><span>Displays 10 a 14</span></div>
+                <div class="vend-tier"><b>20%</b><span>Del 15 en adelante</span></div>
+            </div>
+            <p class="vend-note">Un display sale $23.990 y el pack de 3, $52.000. Solo con un pack ganás desde $5.200, y en una semana de 15 displays podés sacar más de $38.000. Se paga por cada venta, sin sueldo fijo.</p>
+        </section>
+
+        <section class="wrap vend-sec">
+            <span class="vend-eyebrow">Qué te damos</span>
+            <h2>Todo para <em>arrancar mañana</em></h2>
+            <div class="vend-grid">
+                <div class="vend-card"><h3>Displays listos</h3><p>Ya vienen programados con su QR. No tenés que invertir ni comprar stock.</p></div>
+                <div class="vend-card"><h3>Guía de ventas</h3><p>Qué decir en cada local, cómo responder dudas y cómo cerrar la venta.</p></div>
+                <div class="vend-card"><h3>Tu panel</h3><p>Desde el celular ves tus ventas, tu comisión y tu puesto en el ranking del mes.</p></div>
+                <div class="vend-card"><h3>Acompañamiento</h3><p>Cualquier duda, nos escribís por WhatsApp y te ayudamos.</p></div>
+            </div>
+            <p class="vend-note" style="margin-top:16px">Requisitos: ser mayor de 18 años, vivir en Córdoba, tener celular con internet y ganas de hablar con gente.</p>
+        </section>
+
+        <section class="wrap vend-sec" id="postulate">
+            <span class="vend-eyebrow">Postulate</span>
+            <h2>Dejanos tus datos <em>y te escribimos</em></h2>
+            <form class="vend-form" id="fPost" novalidate>
+                <div class="dos">
+                    <label>Nombre y apellido<input name="nombre" required maxlength="80" autocomplete="name"></label>
+                    <label>WhatsApp<input name="whatsapp" type="tel" required maxlength="25" autocomplete="tel" placeholder="351 123-4567"></label>
+                </div>
+                <div class="dos">
+                    <label>Barrio o zona<input name="zona" maxlength="80" placeholder="Por ejemplo: Nueva Córdoba"></label>
+                    <label>Edad<input name="edad" inputmode="numeric" maxlength="3"></label>
+                </div>
+                <label>¿Cuánto tiempo tenés?
+                    <select name="disponibilidad">
+                        <option>Algunas horas por semana</option>
+                        <option>Medio tiempo</option>
+                        <option>Tiempo completo</option>
+                        <option>Solo fines de semana</option>
+                    </select>
+                </label>
+                <label>Instagram <small>(opcional)</small><input name="instagram" maxlength="40" placeholder="@usuario"></label>
+                <label>¿Vendiste algo antes? <small>(opcional, no hace falta experiencia)</small><textarea name="experiencia" maxlength="300"></textarea></label>
+                <label>¿Algo más que quieras contarnos? <small>(opcional)</small><textarea name="mensaje" maxlength="500"></textarea></label>
+                <label class="trampa" aria-hidden="true">Sitio web<input name="sitio" tabindex="-1" autocomplete="off"></label>
+                <p class="error" id="errPost" hidden></p>
+                <button class="btn" type="submit" id="bPost">Enviar postulación</button>
+                <small class="vend-note">Usamos estos datos solo para contactarte por esta búsqueda. <a href="../privacidad.html">Privacidad</a>.</small>
+            </form>
+            <div class="vend-ok" id="okPost" hidden>
+                <h3>¡Listo, recibimos tu postulación!</h3>
+                <p>Te vamos a escribir por WhatsApp en los próximos días. Si querés adelantarte, mandanos un mensaje.</p>
+                <a class="btn" target="_blank" rel="noopener" href="https://wa.me/5493516967688?text=Hola%20Carteg!%20Me%20postul%C3%A9%20para%20vender%20displays.">Escribir por WhatsApp</a>
+            </div>
+        </section>
+
+        <section class="wrap vend-sec vend-faq">
+            <span class="vend-eyebrow">Preguntas</span>
+            <h2>Lo que más <em>nos preguntan</em></h2>
+            <details><summary>¿Tengo que poner plata?</summary><p>No. Te damos los displays para vender y vos cobrás tu comisión de cada venta.</p></details>
+            <details><summary>¿Cuándo cobro?</summary><p>Te quedás con el 10% en el momento de cada venta. Los domingos cerramos la semana y, si llegaste al 15% o al 20%, te pasamos la diferencia.</p></details>
+            <details><summary>¿Necesito experiencia?</summary><p>No. Te damos una guía con qué decir y cómo responder. Lo más importante es que te guste hablar con gente.</p></details>
+            <details><summary>¿Tengo horarios fijos?</summary><p>No. Vendés cuando quieras y en la zona que te quede cómoda.</p></details>
+        </section>
+    </main>
+
+    <footer class="wrap vend-foot">
+        <a href="/">Carteg</a> · Displays NFC para comercios · Córdoba, Argentina · <a href="https://www.instagram.com/carteg.nfc/" target="_blank" rel="noopener">@carteg.nfc</a>
+    </footer>
+
+    <script>
+    (() => {
+        const CLAVE = 'AIzaSyDqG9wG3Sd1RESGM4ofbIZjEE82PgByz-4';
+        const URL_POST = `https://firestore.googleapis.com/v1/projects/carteg/databases/(default)/documents/postulantes?key=${CLAVE}`;
+        const f = document.getElementById('fPost'), err = document.getElementById('errPost'), boton = document.getElementById('bPost');
+        const mostrarError = (t) => { err.textContent = t; err.hidden = false; };
+        const texto = (v, max) => String(v || '').trim().slice(0, max);
+        f.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            err.hidden = true;
+            const nombre = texto(f.nombre.value, 80), whatsapp = texto(f.whatsapp.value, 25);
+            if (nombre.length < 2) return mostrarError('Escribí tu nombre.');
+            if (whatsapp.replace(/\D/g, '').length < 8) return mostrarError('Revisá tu número de WhatsApp.');
+            const listo = () => { f.hidden = true; document.getElementById('okPost').hidden = false; document.getElementById('okPost').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+            if (f.sitio.value) return listo(); // trampa para robots
+            const datos = {
+                nombre, whatsapp,
+                zona: texto(f.zona.value, 80), edad: texto(f.edad.value.replace(/\D/g, ''), 3),
+                disponibilidad: texto(f.disponibilidad.value, 40), instagram: texto(f.instagram.value, 40),
+                experiencia: texto(f.experiencia.value, 300), mensaje: texto(f.mensaje.value, 500),
+                estado: 'Nuevo', origen: 'web',
+            };
+            const fields = Object.fromEntries(Object.entries(datos).map(([k, v]) => [k, { stringValue: v }]));
+            fields.creado = { integerValue: String(Date.now()) };
+            boton.disabled = true; boton.textContent = 'Enviando…';
+            try {
+                const r = await fetch(URL_POST, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields }) });
+                if (!r.ok) throw new Error(r.status);
+                listo();
+            } catch (e2) {
+                boton.disabled = false; boton.textContent = 'Enviar postulación';
+                mostrarError('No se pudo enviar. Probá de nuevo o escribinos por WhatsApp al +54 9 351 696-7688.');
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -87,6 +87,10 @@ function normalizarWhatsapp(t) {
   let n = String(t || "").replace(/\D/g, "");
   if (!n) return "";
   if (n.startsWith("0")) n = n.slice(1);
+  /* Sin código de país, con el "15" del celular adentro (ej: 351 15 555-1234): se saca el 15 */
+  if (!n.startsWith("54") && n.length === 12) {
+    for (const i of [3, 4, 2]) if (n.substr(i, 2) === "15") { n = n.slice(0, i) + n.slice(i + 2); break; }
+  }
   if (!n.startsWith("54")) n = "549" + n;
   return n;
 }

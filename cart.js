@@ -144,6 +144,7 @@ const Cart = (() => {
                 <button type="button" class="cart-close" data-close aria-label="Cerrar carrito">&times;</button>
             </header>
             <ul class="cart-lines"></ul>
+            <div class="cart-upsell" hidden></div>
             <div class="cart-empty">
                 <p>Tu carrito está vacío.</p>
                 <a class="btn" href="catalogo.html">Ver productos</a>
@@ -167,9 +168,85 @@ const Cart = (() => {
         return packs ? `${label} · precio de pack aplicado` : label;
     }
 
+    // Sugerencia de compra: algo que le conviene sumar al cliente según lo que ya eligió.
+    const UPSELL_TEXT = {
+        google: 'Más reseñas para aparecer más arriba en Google.',
+        instagram: 'Que tus clientes te sigan en un toque.',
+        whatsapp: 'Que te escriban sin agendar tu número.',
+    };
+    let upsell = null;
+
+    function suggestionFor(lines) {
+        if (!lines.length) return null;
+        const total = lines.reduce((sum, line) => sum + lineTotal(line), 0);
+        const singles = lines.filter((line) => isDisplay(line.id));
+        const combos = lines.filter((line) => !isDisplay(line.id));
+        const covered = new Set(lines.flatMap((line) => PRODUCTS[line.id].models));
+        const addOne = (id, title, text) => ({
+            id, title, text, models: PRODUCTS[id].models,
+            price: `+${money(lineTotal({ id, count: (lines.find((l) => l.id === id) || { count: 0 }).count + 1 }) - lineTotal(lines.find((l) => l.id === id) || { id, count: 0 }))}`,
+            button: 'Agregar',
+            apply: () => {
+                const next = linesOf(read());
+                const found = next.find((line) => line.id === id);
+                if (found) found.count = Math.min(found.count + 1, MAX_PER_LINE);
+                else next.push({ id, count: 1 });
+                return next;
+            },
+        });
+
+        // Ya tiene el pack: un display de reseñas más, para otra mesa o la caja.
+        if (lines.some((line) => line.id === 'completo')) {
+            return addOne('google', 'Sumá otro de Reseñas', 'Para la caja o la otra mesa: más lugares, más reseñas.');
+        }
+        // Sueltos de 1 o 2 modelos (uno de cada uno), o un solo combo: le conviene el Pack Completo.
+        const onlyOneEach = singles.every((line) => line.count === 1);
+        const packCase = (combos.length === 0 && singles.length >= 1 && singles.length <= 2 && onlyOneEach)
+            || (singles.length === 0 && combos.length === 1 && combos[0].count === 1);
+        if (packCase && PRICES[3] > total) {
+            return {
+                id: 'completo', models: PRODUCTS.completo.models, button: 'Cambiar al pack',
+                title: 'Llevá los 3 con el Pack Completo',
+                text: `Reseñas, Instagram y WhatsApp por ${money(PRICES[3])} en total, con envío gratis.`,
+                price: `+${money(PRICES[3] - total)}`,
+                apply: () => [{ id: 'completo', count: 1 }],
+            };
+        }
+        // Dos del mismo modelo: con el tercero paga precio de pack.
+        const almost = singles.find((line) => line.count % 3 === 2);
+        if (almost) {
+            return addOne(almost.id, `Llevá 3 de ${PRODUCTS[almost.id].name}`, 'Con 3 pagás precio de pack y tenés envío gratis.');
+        }
+        // Si no, el modelo que le falta.
+        const missing = MODELS.find((model) => !covered.has(model));
+        const id = missing || 'google';
+        const reachesFree = total <= FREE_SHIPPING_OVER && total + PRICES[1] > FREE_SHIPPING_OVER;
+        return addOne(id, `Sumá ${PRODUCTS[id].name}`, `${UPSELL_TEXT[id]}${reachesFree ? ' Y llegás al envío gratis.' : ''}`);
+    }
+
+    function renderUpsell(lines) {
+        const box = drawer.querySelector('.cart-upsell');
+        upsell = suggestionFor(lines);
+        box.hidden = !upsell;
+        if (!upsell) return;
+        const thumbs = upsell.models.map((model) => `<img src="assets/${model}.jpg?v=3" alt="" width="48" height="60" loading="lazy">`).join('');
+        box.innerHTML = `
+            <span class="cart-thumb${upsell.models.length > 1 ? ' is-combo' : ''}">${thumbs}</span>
+            <span class="cart-upsell-info">
+                <small>Te puede servir</small>
+                <strong>${upsell.title}</strong>
+                <span>${upsell.text}</span>
+            </span>
+            <span class="cart-upsell-side">
+                <strong>${upsell.price}</strong>
+                <button type="button" class="btn btn-small" data-upsell>${upsell.button}</button>
+            </span>`;
+    }
+
     function renderDrawer() {
         const lines = linesOf(read());
         const total = lines.reduce((sum, line) => sum + lineTotal(line), 0);
+        renderUpsell(lines);
         drawer.classList.toggle('is-empty', lines.length === 0);
         linesEl.innerHTML = lines.map((line) => {
             const product = PRODUCTS[line.id];
@@ -216,6 +293,11 @@ const Cart = (() => {
     drawer.addEventListener('click', (event) => {
         if (event.target.closest('[data-close]')) {
             closeDrawer();
+            return;
+        }
+        if (event.target.closest('[data-upsell]') && upsell) {
+            setLines(upsell.apply());
+            drawer.querySelector('.cart-close').focus();
             return;
         }
         const row = event.target.closest('.cart-line');
