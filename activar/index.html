@@ -170,12 +170,18 @@ function vistaSinPermiso(usuario) {
   $("salir2").onclick = () => signOut(auth);
 }
 
-let displays = [];
+let displays = [], misPedidos = [], perfilVend = null;
 /* El dueño ve todos; un vendedor solo los que activó él */
 const esDuenoActual = () => auth.currentUser && auth.currentUser.uid === DUENO;
 async function cargarDisplays() {
   const col = collection(db, "displays");
   const snap = await getDocs(esDuenoActual() ? col : query(col, where("activadoPor", "==", auth.currentUser.uid)));
+  if (!esDuenoActual()) {
+    try {
+      const sp = await getDocs(query(collection(db, "solicitudes"), where("vendedorUid", "==", auth.currentUser.uid)));
+      misPedidos = sp.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.creado || 0) - (a.creado || 0));
+    } catch (e) { misPedidos = []; }
+  }
   displays = snap.docs.map(d => ({ codigo: d.id, ...d.data() })).sort((a, b) => b.codigo.localeCompare(a.codigo));
 }
 
@@ -211,7 +217,11 @@ async function vistaDueno(mensaje) {
           <a class="btn sec chico" href="/r/${esc(d.codigo)}" target="_blank" rel="noopener">Probar</a>
           <button class="link" data-liberar="${esc(d.codigo)}" type="button">Liberar</button></div>
       </div>`).join("") : `<p class="gris">Todavía no activaste ninguno.</p>`}
-    </section>`;
+    </section>
+    ${misPedidos.length ? `<section class="panel"><h2>Tus pedidos de autorización</h2>
+      ${misPedidos.slice(0, 10).map(q => `<div class="item"><div><code>${esc(q.codigo)}</code> ${esc(q.cliente || "")}</div>
+        <div class="gris">${q.estado === "autorizada" ? "✓ Autorizado" : q.estado === "rechazada" ? "No autorizado" : "Esperando a Carteg"}</div></div>`).join("")}
+    </section>` : ""}`;
 
   const f = $("fActivar");
   const ajustar = () => {
@@ -253,8 +263,27 @@ async function vistaDueno(mensaje) {
       const s = await getDoc(doc(db, "displays", codigo));
       if (n !== revisando || !s.exists()) return;
       ajeno = true;
-      $("yaAsignado").innerHTML = `<div class="aviso">Este código ya está activado por otra persona. No lo podés cambiar; si hay un error, avisale a Carteg.</div>`;
       $("bActivar").disabled = true;
+      const dd = s.data();
+      const pendiente = misPedidos.find(q => q.codigo === codigo && q.estado === "pendiente");
+      $("yaAsignado").innerHTML = pendiente
+        ? `<div class="aviso">Este código ya está activado por otra persona (${esc(dd.cliente || "")}).<br><b>Ya le pediste autorización a Carteg.</b> Cuando la apruebe, recargá esta página y lo vas a poder cambiar.</div>`
+        : `<div class="aviso">Este código ya está activado por otra persona (${esc(dd.cliente || "")}). Para cambiarlo necesitás la autorización de Carteg.
+            <input type="text" id="motivoPedido" maxlength="200" placeholder="¿Qué querés cambiar? (opcional)" style="margin:8px 0">
+            <button class="btn sec chico" id="bPedir" type="button">Pedir autorización a Carteg</button></div>`;
+      const bp = $("bPedir");
+      if (bp) bp.onclick = async () => {
+        bp.disabled = true;
+        const pedido = { codigo, cliente: String(dd.cliente || "").slice(0, 80), tipo: String(dd.tipo || "").slice(0, 30),
+          vendedorUid: auth.currentUser.uid, vendedorNombre: String((perfilVend && perfilVend.nombre) || auth.currentUser.email || "").slice(0, 80),
+          motivo: ($("motivoPedido").value || "").trim().slice(0, 200), estado: "pendiente", creado: Date.now() };
+        try {
+          const ref = doc(collection(db, "solicitudes"));
+          await setDoc(ref, pedido);
+          misPedidos.unshift({ id: ref.id, ...pedido });
+          mostrarExistente();
+        } catch (e) { bp.disabled = false; alert("No se pudo enviar el pedido. Revisá la conexión y probá de nuevo."); }
+      };
     } catch (e) { /* sin conexión: lo frena la base al guardar */ }
   };
   f.tipo.addEventListener("change", () => { ajustar(); revisarLugar(); });
@@ -315,7 +344,7 @@ onAuthStateChanged(auth, async usuario => {
   try {
     const s = await getDoc(doc(db, "usuarios", usuario.uid));
     const p = s.exists() ? s.data() : null;
-    if (p && p.rol === "vendedor" && p.activo !== false) return vistaDueno();
+    if (p && p.rol === "vendedor" && p.activo !== false) { perfilVend = p; return vistaDueno(); }
   } catch (e) { console.error(e); }
   vistaSinPermiso(usuario);
 });

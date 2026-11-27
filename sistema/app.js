@@ -39,7 +39,7 @@ let db = vacio();
 let escuchas = [];
 
 function vacio() {
-  return { movimientos: [], vendedores: [], seguimiento: {}, locales: [], usuarios: [], postulantes: [], config: { ultimoCodigo: 0 }, ranking: null };
+  return { movimientos: [], vendedores: [], seguimiento: {}, locales: [], usuarios: [], postulantes: [], solicitudes: [], config: { ultimoCodigo: 0 }, ranking: null };
 }
 const pref = (k, def) => { try { return localStorage.getItem("carteg-sistema:" + k) || def; } catch (e) { return def; } };
 const guardarPref = (k, v) => { try { localStorage.setItem("carteg-sistema:" + k, v); } catch (e) {} };
@@ -184,6 +184,11 @@ function escucharDueno() {
     listo("config");
   }, errorEscucha));
   escuchas.push(onSnapshot(doc(fs, "resumenes", "ranking"), s => { espejo.ranking = s.exists() ? estable(s.data()) : ""; }, () => {}));
+  /* Pedidos de vendedores para cambiar un display que activó otra persona */
+  escuchas.push(onSnapshot(query(collection(fs, "solicitudes"), where("estado", "==", "pendiente")), s => {
+    db.solicitudes = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.creado || 0) - (b.creado || 0));
+    if (!faltan.size) repintarSiSePuede();
+  }, () => {}));
 }
 function escucharVendedor() {
   const faltan = new Set(["movimientos", "vendedores", "ranking"]);
@@ -268,7 +273,7 @@ const filtrosLoc = { q: "", estado: "" };
 function pintarNav() {
   const p = pendientes().length;
   $("nav").innerHTML = navActual().map(([k, t]) =>
-    `<button data-v="${k}" ${k === vista ? 'aria-current="page"' : ""}>${t}${k === "aprobar" && p ? ` <span class="badge">${p}</span>` : ""}${k === "postulantes" && nuevosPost() ? ` <span class="badge">${nuevosPost()}</span>` : ""}</button>`).join("");
+    `<button data-v="${k}" ${k === vista ? 'aria-current="page"' : ""}>${t}${k === "aprobar" && p ? ` <span class="badge">${p}</span>` : ""}${k === "postulantes" && nuevosPost() ? ` <span class="badge">${nuevosPost()}</span>` : ""}${k === "displays" && rol === "dueno" && (db.solicitudes || []).length ? ` <span class="badge">${db.solicitudes.length}</span>` : ""}</button>`).join("");
 }
 function pintar() {
   if (!navActual().some(([k]) => k === vista)) vista = navActual()[0][0];
@@ -609,6 +614,16 @@ function vistaDisplays() {
   $("vista").innerHTML = `
     <div class="cabeza"><div><h1>Displays</h1><p>Cada display tiene un chip y un QR con su código. Se activan desde el celular, en el momento.</p></div>
       <div class="acciones"><a class="btn" href="/activar/" target="_blank" rel="noopener">Abrir panel de activación</a></div></div>
+    ${rol === "dueno" && (db.solicitudes || []).length ? `<section class="panel"><h2>Pedidos de autorización</h2>
+      <div class="sub">Un vendedor quiere cambiar un display que activó otra persona. Si lo autorizás, ese display pasa a ser suyo y lo puede cambiar.</div>
+      <div class="lista">${db.solicitudes.map(q => `<article class="panel local" data-sol="${esc(q.id)}">
+        <div class="top"><div><div class="nombre"><code>${esc(q.codigo)}</code> ${esc(q.cliente || "")}</div>
+          <div class="meta">${[esc(q.vendedorNombre), esc(q.tipo), q.creado ? fechaCorta(aTexto(new Date(q.creado))) : ""].filter(Boolean).join(" · ")}</div></div>
+          <span class="chip ojo">Pendiente</span></div>
+        ${q.motivo ? `<div class="op"><span>Quiere:</span> ${esc(q.motivo)}</div>` : ""}
+        <div class="acts"><button class="btn" data-a="autorizar-sol" type="button">Autorizar</button><button class="btn sec" data-a="rechazar-sol" type="button">No autorizar</button></div>
+      </article>`).join("")}</div>
+    </section>` : ""}
     <section class="panel"><h2>Cómo se usa</h2>
       <ol class="pasos-lista">
         <li><b>En el local:</b> escaneá el QR del display con tu celular (o entrá a <code>${DOMINIO}/activar/</code>), elegí a dónde lleva y tocá <b>Activar</b>. Funciona al instante.</li>
@@ -998,6 +1013,20 @@ $("vista").addEventListener("click", async e => {
   if (a === "importar") $("archivo").click();
   if (a === "datos-planilla" && confirm("Se cargan los gastos y ventas de tu planilla, y Zoe como vendedora. ¿Seguir?")) {
     aplicarImportacion(datosPlanilla()); guardar(); pintar(); toast("Datos de la planilla cargados");
+  }
+  if (a === "autorizar-sol" || a === "rechazar-sol") {
+    const q = (db.solicitudes || []).find(x => x.id === b.closest("[data-sol]").dataset.sol);
+    if (!q) return;
+    const si = a === "autorizar-sol";
+    if (si && !confirm(`¿Autorizar a ${q.vendedorNombre || "este vendedor"} a cambiar ${q.codigo} (${q.cliente || ""})? El display pasa a ser suyo.`)) return;
+    b.disabled = true;
+    try {
+      if (!DEMO) {
+        if (si) await setDoc(doc(fs, "displays", q.codigo), { activadoPor: q.vendedorUid }, { merge: true });
+        await setDoc(doc(fs, "solicitudes", q.id), { estado: si ? "autorizada" : "rechazada", resuelto: Date.now() }, { merge: true });
+      } else { db.solicitudes = db.solicitudes.filter(x => x !== q); pintar(); }
+      toast(si ? "Autorizado: ya lo puede cambiar" : "Pedido no autorizado");
+    } catch (e2) { b.disabled = false; toast("No se pudo guardar. Revisá la conexión."); }
   }
   if (a === "hoja-nueva") {
     const desde = (db.config.ultimoCodigo || 0) + 1, hasta = desde + 49;
